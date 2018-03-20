@@ -1,0 +1,1030 @@
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.mario = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.fps = exports.mapSize = undefined;
+
+var _characterClass = __webpack_require__(2);
+
+var _viewPort = __webpack_require__(4);
+
+var _tilesMap = __webpack_require__(5);
+
+var mapSize = exports.mapSize = 224;
+
+var fps = exports.fps = 1000 / 300;
+
+var gameWindow = exports.gameWindow = document.getElementById("game_window");
+var ctx = exports.ctx = gameWindow.getContext('2d');
+var w = exports.w = 800;
+var h = exports.h = 600;
+gameWindow.width = w;
+gameWindow.height = h;
+
+var camera = exports.camera = new _viewPort.ViewPort();
+
+var map = exports.map = new _tilesMap.TilesMap();
+
+var mario = exports.mario = new _characterClass.Character(1, "img/mario/MarioSheet.png", 40);
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+document.onkeydown = function (e) {
+    var key = window.event ? e.keyCode : e.which;
+    //console.log(key);
+    switch (key) {
+        case 39:
+        case 37:
+            gc.mario.walk(key === 39 ? 1 : -1);
+            break;
+        case 16:
+            gc.mario.sprint();
+            break;
+        case 32:
+            gc.mario.jump();
+            break;
+        case 82:
+            gc.mario.y = 0;
+            break;
+        default:
+            break;
+    }
+};
+document.onkeyup = function (e) {
+    var key = window.event ? e.keyCode : e.which;
+    switch (key) {
+        case 39:
+        case 37:
+            gc.mario.stop();
+            break;
+        case 16:
+            gc.mario.sprint();
+            break;
+        case 32:
+            break;
+        default:
+            break;
+    }
+};
+
+function update() {
+    gc.ctx.clearRect(0, 0, gc.w, gc.h);
+    gc.ctx.fillStyle = "#6b8cff";
+    gc.ctx.fillRect(0, 0, gc.gameWindow.width, gc.gameWindow.height);
+    gc.ctx.imageSmoothingEnabled = false;
+    gc.map.tiles.map(function (item) {
+        item.draw();
+    });
+    gc.mario.draw();
+}
+setInterval(update, gc.fps);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Character = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _gravity = __webpack_require__(3);
+
+var gravity = _interopRequireWildcard(_gravity);
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Character = exports.Character = function () {
+    function Character(walkSpeed, idleSprite, size) {
+        _classCallCheck(this, Character);
+
+        this.canvasObject = new Image();
+        this.canvasObject.src = idleSprite;
+        this.idle();
+        this.x = 120;
+        this.y = 480;
+        this.size = size;
+        this.const_speed = walkSpeed;
+        this.speed = this.const_speed;
+        this.isWalking = false;
+        this.isStanding = true;
+        this.isJump = false;
+        this.direction = 1;
+        this.walk_animation = [[97, 34], [114, 34], [131, 34]];
+        this.inside_x = 80;
+        this.inside_y = 34;
+        this.animate(this.walk_animation, 50);
+        this.collidedObj = [];
+        this.gravityImpact = gravity.verticalImpact(this, 0, 9);
+    }
+
+    _createClass(Character, [{
+        key: "idle",
+        value: function idle() {
+            this.inside_x = 80;
+            this.inside_y = 34;
+        }
+    }, {
+        key: "walk",
+        value: function walk(direction) {
+            if (!this.isWalking) {
+                gc.mario.isWalking = true;
+                this.direction = direction;
+            }
+        }
+    }, {
+        key: "jump",
+        value: function jump() {
+            if (this.isStanding) {
+                this.isJump = true;
+                this.isStanding = false;
+                this.gravityImpact = gravity.verticalImpact(this, 28, 9);
+            }
+        }
+    }, {
+        key: "animate",
+        value: function animate(coordsArray, time) {
+            var _this = this;
+
+            function getFrame() {
+                var i = 0;
+                return function () {
+                    if (i > coordsArray.length - 1) {
+                        i = 0;
+                    }
+                    i++;
+                    return i - 1;
+                };
+            }
+            var frame = getFrame();
+            setInterval(function () {
+                if (_this.isWalking) {
+                    _this.inside_x = coordsArray[frame()][0];
+                    _this.inside_y = coordsArray[frame()][1];
+                }
+            }, time);
+        }
+    }, {
+        key: "sprint",
+        value: function sprint() {
+            this.speed = this.speed === this.const_speed ? this.const_speed * 2 : this.const_speed;
+        }
+    }, {
+        key: "stop",
+        value: function stop() {
+            this.isWalking = false;
+            this.idle();
+        }
+    }, {
+        key: "isStaningStatus",
+        value: function isStaningStatus() {
+            var _this2 = this;
+
+            this.isStanding = !(this.collidedObj.length === 0);
+            var stands = false;
+            this.collidedObj.map(function (item) {
+                if (item.type === "top") {
+                    _this2.isJump = true;
+                    stands = true;
+                }
+            });
+            this.isStanding = stands;
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            var _this3 = this;
+
+            if (this.isWalking) {
+                var isDenied = null;
+                this.collidedObj.map(function (item) {
+                    if (item.type === "all") {
+                        isDenied = _this3.x < item.obj.x + item.obj.size / 2 ? 1 : -1;
+                    }
+                });
+
+                if (isDenied !== this.direction && this.x + this.direction * this.speed > 0) {
+                    this.x += this.direction * this.speed;
+                    if (this.direction === 1 && this.x >= gc.gameWindow.width / 2 && this.x + this.size / 2 + gc.camera.xOffset < gc.mapSize * 40 - gc.gameWindow.width / 2) {
+                        gc.camera.move(-this.speed * this.direction, 0);
+                    }
+                }
+
+                if (this.x >= gc.gameWindow.width / 2) {
+                    this.x = gc.gameWindow.width / 2;
+                }
+
+                if (this.x + this.direction * this.speed - this.size / 2 < 0) {
+                    this.x = this.size / 2;
+                }
+            }
+
+            if (!this.isStanding) {
+                this.gravityImpact();
+            }
+
+            this.isStaningStatus();
+
+            if (!this.isWalking && this.collidedObj.length !== 0) {
+                this.idle();
+            }
+
+            gc.ctx.save();
+            gc.ctx.scale(this.direction, 1);
+            gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.direction * this.x - this.size / 2, this.y, this.size, this.size);
+            gc.ctx.restore();
+        }
+    }]);
+
+    return Character;
+}();
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.verticalImpact = verticalImpact;
+function verticalImpact(obj, impact, gravity) {
+    var fallSpeed = gravity;
+    return function () {
+        obj.inside_x = 165;
+        obj.inside_y = 34;
+        var isDenied = null;
+        var yCoord = 0;
+        obj.collidedObj.map(function (item) {
+            if (item.type !== "all" && obj.y + obj.size > item.obj.y && obj.y < item.obj.y + item.obj.size) {
+                if (item.type === "top") {
+                    isDenied = "top";
+                    yCoord = item.obj.y - obj.size;
+                    obj.gravityImpact = verticalImpact(obj, 0, 9);
+                } else {
+                    isDenied = "bottom";
+                    yCoord = item.obj.y + item.obj.size;
+                }
+            }
+        });
+        if (isDenied === null) {
+            var power = ((fallSpeed += gravity / 30) - impact) / 3.6;
+            obj.isJump = power < 0;
+            obj.y += power;
+        } else {
+            obj.y = yCoord;
+            if (isDenied === "bottom") {
+                obj.y += 1;
+                obj.gravityImpact = verticalImpact(obj, 0, 9);
+            }
+        }
+    };
+}
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ViewPort = exports.ViewPort = function () {
+    function ViewPort() {
+        _classCallCheck(this, ViewPort);
+
+        this.xOffset = 0;
+        this.yOffset = 0;
+    }
+
+    _createClass(ViewPort, [{
+        key: "move",
+        value: function move(x, y) {
+            this.xOffset -= x;
+            this.yOffset -= y;
+        }
+    }]);
+
+    return ViewPort;
+}();
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.TilesMap = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _tileClass = __webpack_require__(6);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TilesMap = exports.TilesMap = function () {
+    function TilesMap() {
+        _classCallCheck(this, TilesMap);
+
+        this.tiles = [];
+        this.tilesCoords = [];
+        getTilesMap(this);
+    }
+
+    _createClass(TilesMap, [{
+        key: "getTileCollider",
+        value: function getTileCollider(x, y) {
+            var isBottomElement = false;
+            this.tiles.map(function (item) {
+                if (item.x === x && item.y === y && item.collider) {
+                    isBottomElement = true;
+                }
+            });
+            return isBottomElement;
+        }
+    }]);
+
+    return TilesMap;
+}();
+
+function getTilesMap(map) {
+    for (var i = 0; i < 69; i++) {
+        map.tilesCoords.push([i * 40, 520, "ground_brick"]);
+        map.tilesCoords.push([i * 40, 560, "ground_brick"]);
+    }
+    for (var _i = 71; _i < 86; _i++) {
+        map.tilesCoords.push([_i * 40, 520, "ground_brick"]);
+        map.tilesCoords.push([_i * 40, 560, "ground_brick"]);
+    }
+    for (var _i2 = 89; _i2 < 153; _i2++) {
+        map.tilesCoords.push([_i2 * 40, 520, "ground_brick"]);
+        map.tilesCoords.push([_i2 * 40, 560, "ground_brick"]);
+    }
+    for (var _i3 = 155; _i3 < 224; _i3++) {
+        map.tilesCoords.push([_i3 * 40, 520, "ground_brick"]);
+        map.tilesCoords.push([_i3 * 40, 560, "ground_brick"]);
+    }
+    for (var _i4 = 0; _i4 < 5; _i4++) {
+        var multipler = 1920 * _i4;
+        map.tilesCoords.push([multipler + 320, 117, "cloud-left"]);
+        map.tilesCoords.push([multipler + 360, 117, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 360, 97, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 400, 117, "cloud-right"]);
+
+        map.tilesCoords.push([multipler + 760, 80, "cloud-left"]);
+        map.tilesCoords.push([multipler + 800, 80, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 800, 60, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 840, 80, "cloud-right"]);
+
+        map.tilesCoords.push([multipler + 1080, 120, "cloud-left"]);
+        map.tilesCoords.push([multipler + 1120, 120, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 1120, 100, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 1160, 120, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 1160, 100, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 1200, 120, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 1200, 100, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 1240, 120, "cloud-right"]);
+
+        map.tilesCoords.push([multipler + 1440, 80, "cloud-left"]);
+        map.tilesCoords.push([multipler + 1480, 80, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 1480, 60, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 1520, 80, "cloud-middle"]);
+        map.tilesCoords.push([multipler + 1520, 60, "cloud-middle-top"]);
+        map.tilesCoords.push([multipler + 1560, 80, "cloud-right"]);
+    }
+
+    map.tilesCoords.push([640, 360, "bonus_brick"]);
+    map.tilesCoords.push([800, 360, "action_brick"]);
+    map.tilesCoords.push([840, 360, "bonus_brick"]);
+    map.tilesCoords.push([880, 360, "action_brick"]);
+    map.tilesCoords.push([920, 360, "bonus_brick"]);
+    map.tilesCoords.push([960, 360, "action_brick"]);
+    map.tilesCoords.push([880, 200, "bonus_brick"]);
+
+    for (var _i5 = 0; _i5 < 5; _i5++) {
+        var _multipler = 1920 * _i5;
+
+        map.tilesCoords.push([_multipler + 0, 480, "hill-left-slide"]);
+        map.tilesCoords.push([_multipler + 40, 480, "hill-left-inner"]);
+        map.tilesCoords.push([_multipler + 80, 480, "hill-middle-inner"]);
+        map.tilesCoords.push([_multipler + 120, 480, "hill-right-inner"]);
+        map.tilesCoords.push([_multipler + 160, 480, "hill-right-slide"]);
+        map.tilesCoords.push([_multipler + 40, 440, "hill-left-slide"]);
+        map.tilesCoords.push([_multipler + 80, 440, "hill-left-inner"]);
+        map.tilesCoords.push([_multipler + 120, 440, "hill-right-slide"]);
+        map.tilesCoords.push([_multipler + 80, 400, "hill-top"]);
+
+        map.tilesCoords.push([_multipler + 640, 480, "hill-left-slide"]);
+        map.tilesCoords.push([_multipler + 680, 480, "hill-left-inner"]);
+        map.tilesCoords.push([_multipler + 720, 480, "hill-right-slide"]);
+        map.tilesCoords.push([_multipler + 680, 440, "hill-top"]);
+    }
+
+    for (var _i6 = 0; _i6 < 5; _i6++) {
+        var _multipler2 = 1920 * _i6;
+
+        map.tilesCoords.push([_multipler2 + 440, 480, "bush-left"]);
+        map.tilesCoords.push([_multipler2 + 480, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 520, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 560, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 600, 480, "bush-right"]);
+
+        map.tilesCoords.push([_multipler2 + 920, 480, "bush-left"]);
+        map.tilesCoords.push([_multipler2 + 960, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 1000, 480, "bush-right"]);
+
+        map.tilesCoords.push([_multipler2 + 1640, 480, "bush-left"]);
+        map.tilesCoords.push([_multipler2 + 1680, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 1720, 480, "bush-middle"]);
+        map.tilesCoords.push([_multipler2 + 1760, 480, "bush-right"]);
+    }
+
+    map.tilesCoords.push([1120, 480, "pipe-base-left"]);
+    map.tilesCoords.push([1160, 480, "pipe-base-right"]);
+    map.tilesCoords.push([1120, 440, "pipe-top-left"]);
+    map.tilesCoords.push([1160, 440, "pipe-top-right"]);
+
+    map.tilesCoords.push([1520, 480, "pipe-base-left"]);
+    map.tilesCoords.push([1560, 480, "pipe-base-right"]);
+    map.tilesCoords.push([1520, 440, "pipe-base-left"]);
+    map.tilesCoords.push([1560, 440, "pipe-base-right"]);
+    map.tilesCoords.push([1520, 400, "pipe-top-left"]);
+    map.tilesCoords.push([1560, 400, "pipe-top-right"]);
+
+    map.tilesCoords.push([1840, 480, "pipe-base-left"]);
+    map.tilesCoords.push([1880, 480, "pipe-base-right"]);
+    map.tilesCoords.push([1840, 440, "pipe-base-left"]);
+    map.tilesCoords.push([1880, 440, "pipe-base-right"]);
+    map.tilesCoords.push([1840, 400, "pipe-base-left"]);
+    map.tilesCoords.push([1880, 400, "pipe-base-right"]);
+    map.tilesCoords.push([1840, 360, "pipe-top-left"]);
+    map.tilesCoords.push([1880, 360, "pipe-top-right"]);
+
+    map.tilesCoords.push([2280, 480, "pipe-base-left"]);
+    map.tilesCoords.push([2320, 480, "pipe-base-right"]);
+    map.tilesCoords.push([2280, 440, "pipe-base-left"]);
+    map.tilesCoords.push([2320, 440, "pipe-base-right"]);
+    map.tilesCoords.push([2280, 400, "pipe-base-left"]);
+    map.tilesCoords.push([2320, 400, "pipe-base-right"]);
+    map.tilesCoords.push([2280, 360, "pipe-top-left"]);
+    map.tilesCoords.push([2320, 360, "pipe-top-right"]);
+
+    map.tilesCoords.push([3080, 360, "action_brick"]);
+    map.tilesCoords.push([3120, 360, "bonus_brick"]);
+    map.tilesCoords.push([3160, 360, "action_brick"]);
+
+    map.tilesCoords.push([3200, 200, "action_brick"]);
+    map.tilesCoords.push([3240, 200, "action_brick"]);
+    map.tilesCoords.push([3280, 200, "action_brick"]);
+    map.tilesCoords.push([3320, 200, "action_brick"]);
+    map.tilesCoords.push([3360, 200, "action_brick"]);
+    map.tilesCoords.push([3400, 200, "action_brick"]);
+    map.tilesCoords.push([3440, 200, "action_brick"]);
+    map.tilesCoords.push([3480, 200, "action_brick"]);
+
+    map.tilesCoords.push([3640, 200, "action_brick"]);
+    map.tilesCoords.push([3680, 200, "action_brick"]);
+    map.tilesCoords.push([3720, 200, "action_brick"]);
+    map.tilesCoords.push([3760, 200, "bonus_brick"]);
+
+    map.tilesCoords.push([3760, 360, "action_brick"]);
+
+    map.tilesCoords.push([4000, 360, "action_brick"]);
+    map.tilesCoords.push([4040, 360, "action_brick"]);
+
+    map.tilesCoords.push([4240, 360, "bonus_brick"]);
+
+    map.tilesCoords.push([4360, 360, "bonus_brick"]);
+
+    map.tilesCoords.push([4480, 360, "bonus_brick"]);
+
+    map.tilesCoords.push([4360, 200, "bonus_brick"]);
+
+    map.tilesCoords.push([4720, 360, "action_brick"]);
+
+    map.tilesCoords.push([4840, 200, "action_brick"]);
+    map.tilesCoords.push([4880, 200, "action_brick"]);
+    map.tilesCoords.push([4920, 200, "action_brick"]);
+
+    map.tilesCoords.push([5120, 200, "action_brick"]);
+    map.tilesCoords.push([5160, 200, "bonus_brick"]);
+    map.tilesCoords.push([5200, 200, "bonus_brick"]);
+    map.tilesCoords.push([5240, 200, "action_brick"]);
+
+    map.tilesCoords.push([5160, 360, "action_brick"]);
+    map.tilesCoords.push([5200, 360, "action_brick"]);
+
+    map.tilesCoords.push([5360, 480, "empty_brick"]);
+    map.tilesCoords.push([5400, 480, "empty_brick"]);
+    map.tilesCoords.push([5440, 480, "empty_brick"]);
+    map.tilesCoords.push([5480, 480, "empty_brick"]);
+    map.tilesCoords.push([5400, 440, "empty_brick"]);
+    map.tilesCoords.push([5440, 440, "empty_brick"]);
+    map.tilesCoords.push([5480, 440, "empty_brick"]);
+    map.tilesCoords.push([5440, 400, "empty_brick"]);
+    map.tilesCoords.push([5480, 400, "empty_brick"]);
+    map.tilesCoords.push([5480, 360, "empty_brick"]);
+
+    map.tilesCoords.push([5600, 480, "empty_brick"]);
+    map.tilesCoords.push([5640, 480, "empty_brick"]);
+    map.tilesCoords.push([5680, 480, "empty_brick"]);
+    map.tilesCoords.push([5720, 480, "empty_brick"]);
+    map.tilesCoords.push([5600, 440, "empty_brick"]);
+    map.tilesCoords.push([5640, 440, "empty_brick"]);
+    map.tilesCoords.push([5680, 440, "empty_brick"]);
+    map.tilesCoords.push([5600, 400, "empty_brick"]);
+    map.tilesCoords.push([5640, 400, "empty_brick"]);
+    map.tilesCoords.push([5600, 360, "empty_brick"]);
+
+    map.tilesCoords.push([5920, 480, "empty_brick"]);
+    map.tilesCoords.push([5960, 480, "empty_brick"]);
+    map.tilesCoords.push([6000, 480, "empty_brick"]);
+    map.tilesCoords.push([6040, 480, "empty_brick"]);
+    map.tilesCoords.push([5960, 440, "empty_brick"]);
+    map.tilesCoords.push([6000, 440, "empty_brick"]);
+    map.tilesCoords.push([6040, 440, "empty_brick"]);
+    map.tilesCoords.push([6000, 400, "empty_brick"]);
+    map.tilesCoords.push([6040, 400, "empty_brick"]);
+    map.tilesCoords.push([6040, 360, "empty_brick"]);
+    map.tilesCoords.push([6080, 360, "empty_brick"]);
+    map.tilesCoords.push([6080, 400, "empty_brick"]);
+    map.tilesCoords.push([6080, 440, "empty_brick"]);
+    map.tilesCoords.push([6080, 480, "empty_brick"]);
+
+    map.tilesCoords.push([6200, 480, "empty_brick"]);
+    map.tilesCoords.push([6200, 440, "empty_brick"]);
+    map.tilesCoords.push([6200, 400, "empty_brick"]);
+    map.tilesCoords.push([6200, 360, "empty_brick"]);
+    map.tilesCoords.push([6240, 480, "empty_brick"]);
+    map.tilesCoords.push([6240, 440, "empty_brick"]);
+    map.tilesCoords.push([6240, 400, "empty_brick"]);
+    map.tilesCoords.push([6280, 480, "empty_brick"]);
+    map.tilesCoords.push([6280, 440, "empty_brick"]);
+    map.tilesCoords.push([6320, 480, "empty_brick"]);
+
+    map.tilesCoords.push([6520, 480, "pipe-base-left"]);
+    map.tilesCoords.push([6560, 480, "pipe-base-right"]);
+    map.tilesCoords.push([6520, 440, "pipe-top-left"]);
+    map.tilesCoords.push([6560, 440, "pipe-top-right"]);
+
+    map.tilesCoords.push([6720, 360, "action_brick"]);
+    map.tilesCoords.push([6760, 360, "action_brick"]);
+    map.tilesCoords.push([6800, 360, "bonus_brick"]);
+    map.tilesCoords.push([6840, 360, "action_brick"]);
+
+    map.tilesCoords.push([7160, 480, "pipe-base-left"]);
+    map.tilesCoords.push([7200, 480, "pipe-base-right"]);
+    map.tilesCoords.push([7160, 440, "pipe-top-left"]);
+    map.tilesCoords.push([7200, 440, "pipe-top-right"]);
+
+    map.tilesCoords.push([7240, 480, "empty_brick"]);
+    map.tilesCoords.push([7280, 480, "empty_brick"]);
+    map.tilesCoords.push([7320, 480, "empty_brick"]);
+    map.tilesCoords.push([7360, 480, "empty_brick"]);
+    map.tilesCoords.push([7400, 480, "empty_brick"]);
+    map.tilesCoords.push([7440, 480, "empty_brick"]);
+    map.tilesCoords.push([7480, 480, "empty_brick"]);
+    map.tilesCoords.push([7520, 480, "empty_brick"]);
+    map.tilesCoords.push([7560, 480, "empty_brick"]);
+
+    map.tilesCoords.push([7280, 440, "empty_brick"]);
+    map.tilesCoords.push([7320, 440, "empty_brick"]);
+    map.tilesCoords.push([7360, 440, "empty_brick"]);
+    map.tilesCoords.push([7400, 440, "empty_brick"]);
+    map.tilesCoords.push([7440, 440, "empty_brick"]);
+    map.tilesCoords.push([7480, 440, "empty_brick"]);
+    map.tilesCoords.push([7520, 440, "empty_brick"]);
+    map.tilesCoords.push([7560, 440, "empty_brick"]);
+
+    map.tilesCoords.push([7320, 400, "empty_brick"]);
+    map.tilesCoords.push([7360, 400, "empty_brick"]);
+    map.tilesCoords.push([7400, 400, "empty_brick"]);
+    map.tilesCoords.push([7440, 400, "empty_brick"]);
+    map.tilesCoords.push([7480, 400, "empty_brick"]);
+    map.tilesCoords.push([7520, 400, "empty_brick"]);
+    map.tilesCoords.push([7560, 400, "empty_brick"]);
+
+    map.tilesCoords.push([7360, 360, "empty_brick"]);
+    map.tilesCoords.push([7400, 360, "empty_brick"]);
+    map.tilesCoords.push([7440, 360, "empty_brick"]);
+    map.tilesCoords.push([7480, 360, "empty_brick"]);
+    map.tilesCoords.push([7520, 360, "empty_brick"]);
+    map.tilesCoords.push([7560, 360, "empty_brick"]);
+
+    map.tilesCoords.push([7400, 320, "empty_brick"]);
+    map.tilesCoords.push([7440, 320, "empty_brick"]);
+    map.tilesCoords.push([7480, 320, "empty_brick"]);
+    map.tilesCoords.push([7520, 320, "empty_brick"]);
+    map.tilesCoords.push([7560, 320, "empty_brick"]);
+
+    map.tilesCoords.push([7440, 280, "empty_brick"]);
+    map.tilesCoords.push([7480, 280, "empty_brick"]);
+    map.tilesCoords.push([7520, 280, "empty_brick"]);
+    map.tilesCoords.push([7560, 280, "empty_brick"]);
+
+    map.tilesCoords.push([7480, 240, "empty_brick"]);
+    map.tilesCoords.push([7520, 240, "empty_brick"]);
+    map.tilesCoords.push([7560, 240, "empty_brick"]);
+
+    map.tilesCoords.push([7520, 200, "empty_brick"]);
+    map.tilesCoords.push([7560, 200, "empty_brick"]);
+
+    map.tilesCoords.push([7920, 480, "empty_brick"]);
+
+    map.tilesCoords.push([7920, 440, "flag_base"]);
+    map.tilesCoords.push([7920, 400, "flag_base"]);
+    map.tilesCoords.push([7920, 360, "flag_base"]);
+    map.tilesCoords.push([7920, 320, "flag_base"]);
+    map.tilesCoords.push([7920, 280, "flag_base"]);
+    map.tilesCoords.push([7920, 240, "flag_base"]);
+    map.tilesCoords.push([7920, 200, "flag_base"]);
+    map.tilesCoords.push([7920, 160, "flag_base"]);
+    map.tilesCoords.push([7920, 120, "flag_base"]);
+
+    map.tilesCoords.push([7920, 80, "flag_top"]);
+
+    map.tilesCoords.push([7900, 120, "flag_plane"]);
+
+    map.tilesCoords.push([8080, 480, "castle_brick"]);
+    map.tilesCoords.push([8120, 480, "castle_brick"]);
+    map.tilesCoords.push([8160, 480, "black"]);
+    map.tilesCoords.push([8200, 480, "castle_brick"]);
+    map.tilesCoords.push([8240, 480, "castle_brick"]);
+
+    map.tilesCoords.push([8080, 440, "castle_brick"]);
+    map.tilesCoords.push([8120, 440, "castle_brick"]);
+    map.tilesCoords.push([8160, 440, "castle_brick_door_top"]);
+    map.tilesCoords.push([8200, 440, "castle_brick"]);
+    map.tilesCoords.push([8240, 440, "castle_brick"]);
+
+    map.tilesCoords.push([8080, 400, "castle_brick_top_snake"]);
+    map.tilesCoords.push([8120, 400, "castle_brick_top_snake_2"]);
+    map.tilesCoords.push([8160, 400, "castle_brick_top_snake_2"]);
+    map.tilesCoords.push([8200, 400, "castle_brick_top_snake_2"]);
+    map.tilesCoords.push([8240, 400, "castle_brick_top_snake"]);
+
+    map.tilesCoords.push([8120, 360, "castle_brick_black_right"]);
+    map.tilesCoords.push([8160, 360, "castle_brick"]);
+    map.tilesCoords.push([8200, 360, "castle_brick_black_left"]);
+
+    map.tilesCoords.push([8120, 320, "castle_brick_top_snake"]);
+    map.tilesCoords.push([8160, 320, "castle_brick_top_snake"]);
+    map.tilesCoords.push([8200, 320, "castle_brick_top_snake"]);
+
+    map.tilesCoords.map(function (item) {
+        var tile = void 0;
+        switch (item[2]) {
+            case "ground_brick":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 0);
+                break;
+            case "action_brick":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 0, true);
+                break;
+            case "cloud-left":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 0, 328);
+                break;
+            case "cloud-middle":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 16, 328);
+                break;
+            case "cloud-middle-top":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 16, 320);
+                break;
+            case "cloud-right":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 32, 328);
+                break;
+            case "bush-left":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 144);
+                break;
+            case "bush-middle":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 144);
+                break;
+            case "bush-right":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 208, 144);
+                break;
+            case "hill-left-slide":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 128, 128);
+                break;
+            case "hill-right-slide":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 160, 128);
+                break;
+            case "hill-left-inner":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 128, 144);
+                break;
+            case "hill-middle-inner":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 144, 144);
+                break;
+            case "hill-right-inner":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 160, 144);
+                break;
+            case "hill-top":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 144, 128);
+                break;
+            case "pipe-top-left":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 128);
+                break;
+            case "pipe-top-right":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 128);
+                break;
+            case "pipe-base-left":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 144);
+                break;
+            case "pipe-base-right":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 144);
+                break;
+            case "bonus_brick":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [[384, 0], [400, 0], [416, 0]], item[0], item[1], 384, 0, true);
+                break;
+            case "empty_brick":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 16);
+                break;
+            case "flag_base":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 256, 144);
+                break;
+            case "flag_top":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 256, 128);
+                break;
+            case "flag_plane":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet.png", true, [], item[0], item[1], 128, 32);
+                break;
+            case "castle_brick":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 32, 0);
+                break;
+            case "black":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 208, 16);
+                break;
+            case "castle_brick_door_top":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 16);
+                break;
+            case "castle_brick_top_snake":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 0);
+                break;
+            case "castle_brick_top_snake_2":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 16);
+                break;
+            case "castle_brick_black_right":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 0);
+                break;
+            case "castle_brick_black_left":
+                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 224, 0);
+                break;
+        }
+        map.tiles.push(tile);
+    });
+}
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Tile = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _collision = __webpack_require__(7);
+
+var collision = _interopRequireWildcard(_collision);
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Tile = exports.Tile = function () {
+    function Tile(idleSprite, collider, animation_array, x, y, inside_x, inside_y) {
+        var punchable = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
+
+        _classCallCheck(this, Tile);
+
+        this.canvasObject = new Image();
+        this.canvasObject.src = idleSprite;
+        this.x = x;
+        this.y = y;
+        this.xStart = x;
+        this.yStart = y;
+        this.size = 40;
+        this.inside_x = inside_x;
+        this.inside_y = inside_y;
+        this.collider = collider;
+        this.animation_array = animation_array;
+        if (animation_array.length > 0) this.animate(this.animation_array, 200);
+        this.punchable = punchable;
+        this.isPunched = false;
+        this.test = false;
+    }
+
+    _createClass(Tile, [{
+        key: "animate",
+        value: function animate(coordsArray, time) {
+            var _this = this;
+
+            function getFrame() {
+                var i = 0;
+                return function () {
+                    if (i > coordsArray.length - 1) {
+                        i = 0;
+                    }
+                    i++;
+                    return i - 1;
+                };
+            }
+            var frame = getFrame();
+            setInterval(function () {
+                _this.inside_x = coordsArray[frame()][0];
+                _this.inside_y = coordsArray[frame()][1];
+            }, time);
+        }
+    }, {
+        key: "punched",
+        value: function punched() {
+            if (this.isPunched) {
+                this.y -= 1;
+            } else if (this.y < this.yStart) {
+                this.y += 1;
+            }
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            var _this2 = this;
+
+            if (this.collider && collision.collision(gc.mario, this) === "bottom") {
+                if (gc.mario.isJump) {
+                    this.isPunched = true;
+                    setTimeout(function () {
+                        _this2.isPunched = false;
+                    }, 100);
+                }
+            }
+
+            if (this.punchable) this.punched();
+            this.x = this.xStart - gc.camera.xOffset;
+            gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
+        }
+    }]);
+
+    return Tile;
+}();
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.collision = collision;
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function collision(obj1, obj2) {
+    var collideSide = null;
+    if (obj1.x + obj1.size / 2 >= obj2.x && obj1.x - obj1.size / 2 <= obj2.x + obj2.size && obj1.y <= obj2.y + obj2.size && obj1.y + obj1.size >= obj2.y) {
+        collideSide = "all";
+        if (obj1.y + obj1.size < obj2.y + obj2.size / 2 && !gc.map.getTileCollider(obj2.x, obj2.y - 40)) {
+            collideSide = "top";
+        }
+        if (obj1.y > obj2.y + obj2.size / 2 && Math.abs(obj1.x - (obj2.x + obj2.size / 2)) < 30) {
+            collideSide = "bottom";
+        }
+    }
+    var isCounted = false;
+    var num = null;
+    obj1.collidedObj.map(function (item, index) {
+        if (item.obj === obj2) {
+            isCounted = true;
+            num = index;
+        }
+    });
+    if (!isCounted && collideSide !== null) {
+        obj1.collidedObj.push({ obj: obj2, type: collideSide });
+    }
+    if (isCounted && collideSide === null) {
+        obj1.collidedObj.splice(num, 1);
+    }
+    return collideSide;
+}
+
+/***/ })
+/******/ ]);
