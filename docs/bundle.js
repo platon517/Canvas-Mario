@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,19 +71,83 @@
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
-exports.mario = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.fps = exports.mapSize = undefined;
+exports.enemies = exports.mario = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.gameOver = exports.fps = exports.mapSize = exports.sound_enemy = exports.sound_player = exports.music = undefined;
 
-var _characterClass = __webpack_require__(2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _viewPort = __webpack_require__(4);
+var _viewPort = __webpack_require__(5);
 
-var _tilesMap = __webpack_require__(5);
+var _tilesMap = __webpack_require__(6);
+
+var _playerCharacterClass = __webpack_require__(8);
+
+var _enemyClass = __webpack_require__(9);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Sound = function () {
+    function Sound(id) {
+        var loop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        _classCallCheck(this, Sound);
+
+        this.elem = document.getElementById(id);
+        this.elem.loop = loop;
+        this.elem.preload = false;
+    }
+
+    _createClass(Sound, [{
+        key: "loop",
+        value: function loop() {
+            var val = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+            this.elem.loop = val;
+        }
+    }, {
+        key: "play",
+        value: function play(val) {
+            var _this = this;
+
+            var src = void 0;
+            switch (val) {
+                case "bg":
+                    src = "sounds/Theme.mp3";
+                    break;
+                case "die":
+                    src = "sounds/mariodie.wav";
+                    break;
+                case "mario_jump":
+                    src = "sounds/jump.wav";
+                    break;
+                case "mario_stomp":
+                    src = "sounds/stomp.wav";
+                    break;
+            }
+            this.elem.pause();
+            this.elem.src = src;
+            this.elem.onloadeddata = function () {
+                console.log("Browser has loaded " + val);
+                _this.elem.play();
+            };
+            //this.elem.play();
+        }
+    }]);
+
+    return Sound;
+}();
+
+var music = exports.music = new Sound("music", true);
+music.play("bg");
+var sound_player = exports.sound_player = new Sound("sound_player");
+var sound_enemy = exports.sound_enemy = new Sound("sound_enemy");
 
 var mapSize = exports.mapSize = 224;
 
 var fps = exports.fps = 1000 / 300;
+
+var gameOver = exports.gameOver = false;
 
 var gameWindow = exports.gameWindow = document.getElementById("game_window");
 var ctx = exports.ctx = gameWindow.getContext('2d');
@@ -96,7 +160,25 @@ var camera = exports.camera = new _viewPort.ViewPort();
 
 var map = exports.map = new _tilesMap.TilesMap();
 
-var mario = exports.mario = new _characterClass.Character(1, "img/mario/MarioSheet.png", 40);
+var mario = exports.mario = new _playerCharacterClass.PlayerChar(1, "img/mario/MarioSheet.png", 80, 34, 165, 34, [182, 34], [50, [97, 34], [114, 34], [131, 34]], 120, 480);
+
+var enemies = exports.enemies = [];
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 900, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 1620, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 2060, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 2120, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 3220, 160, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 3300, 160, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 3900, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 3960, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 4580, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 4640, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 4960, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 5020, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 5120, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 5180, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 6980, 480, true));
+enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 7040, 480, true));
 
 /***/ }),
 /* 1 */
@@ -105,61 +187,47 @@ var mario = exports.mario = new _characterClass.Character(1, "img/mario/MarioShe
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.collision = collision;
+
 var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-document.onkeydown = function (e) {
-    var key = window.event ? e.keyCode : e.which;
-    //console.log(key);
-    switch (key) {
-        case 39:
-        case 37:
-            gc.mario.walk(key === 39 ? 1 : -1);
-            break;
-        case 16:
-            gc.mario.sprint();
-            break;
-        case 32:
-            gc.mario.jump();
-            break;
-        case 82:
-            gc.mario.y = 0;
-            break;
-        default:
-            break;
-    }
-};
-document.onkeyup = function (e) {
-    var key = window.event ? e.keyCode : e.which;
-    switch (key) {
-        case 39:
-        case 37:
-            gc.mario.stop();
-            break;
-        case 16:
-            gc.mario.sprint();
-            break;
-        case 32:
-            break;
-        default:
-            break;
-    }
-};
+function collision(obj1, obj2) {
+    var alives = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-function update() {
-    gc.ctx.clearRect(0, 0, gc.w, gc.h);
-    gc.ctx.fillStyle = "#6b8cff";
-    gc.ctx.fillRect(0, 0, gc.gameWindow.width, gc.gameWindow.height);
-    gc.ctx.imageSmoothingEnabled = false;
-    gc.map.tiles.map(function (item) {
-        item.draw();
+    var collideSide = null;
+    if (gc.gameOver && obj1 === gc.mario) return collideSide;
+    if (obj1.x + obj1.size / 2 >= obj2.x - (alives ? obj2.size / 2 : 0) && obj1.x - obj1.size / 2 <= obj2.x + obj2.size / (alives ? 2 : 1) && obj1.y <= obj2.y + obj2.size && obj1.y + obj1.size >= obj2.y) {
+        collideSide = "all";
+        if (obj1.y + obj1.size < obj2.y + obj2.size / 2 && !gc.map.getTileCollider(obj2.x, obj2.y - 40)) {
+            collideSide = "top";
+        }
+        if (obj1.y > obj2.y + obj2.size / 2 && Math.abs(obj1.x - (obj2.x + obj2.size / 2)) < 30) {
+            collideSide = "bottom";
+        }
+    }
+    var isCounted = false;
+    var num = null;
+    obj1.collidedObj.map(function (item, index) {
+        if (item.obj === obj2) {
+            isCounted = true;
+            num = index;
+        }
     });
-    gc.mario.draw();
+    if (!isCounted && collideSide !== null) {
+        obj1.collidedObj.push({ obj: obj2, type: collideSide });
+    }
+    if (isCounted && collideSide === null) {
+        obj1.collidedObj.splice(num, 1);
+    }
+    return collideSide;
 }
-setInterval(update, gc.fps);
 
 /***/ }),
 /* 2 */
@@ -188,62 +256,62 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Character = exports.Character = function () {
-    function Character(walkSpeed, idleSprite, size) {
+    function Character(walkSpeed, idleSprite, idleSprite_x, idleSprite_y, jumpSprite_x, jumpSprite_y, dieSprite, walk_animation, x, y) {
+        var autoWalk = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : false;
+
         _classCallCheck(this, Character);
 
         this.canvasObject = new Image();
         this.canvasObject.src = idleSprite;
         this.idle();
-        this.x = 120;
-        this.y = 480;
-        this.size = size;
+        this.x = x;
+        this.y = y;
+        this.size = 40;
         this.const_speed = walkSpeed;
         this.speed = this.const_speed;
         this.isWalking = false;
         this.isStanding = true;
         this.isJump = false;
-        this.direction = 1;
-        this.walk_animation = [[97, 34], [114, 34], [131, 34]];
-        this.inside_x = 80;
-        this.inside_y = 34;
-        this.animate(this.walk_animation, 50);
+        this.jumpSprite_x = jumpSprite_x;
+        this.jumpSprite_y = jumpSprite_y;
+        this.direction = -1;
+        this.walk_animation = walk_animation;
+        this.inside_x_idle = idleSprite_x;
+        this.inside_y_idle = idleSprite_y;
+        this.inside_x = idleSprite_x;
+        this.inside_y = idleSprite_y;
+        this.animate(this.walk_animation);
         this.collidedObj = [];
         this.gravityImpact = gravity.verticalImpact(this, 0, 9);
+        this.autoWalk = autoWalk;
+        this.dieSprite = dieSprite;
+        this.died = false;
     }
 
     _createClass(Character, [{
         key: "idle",
         value: function idle() {
-            this.inside_x = 80;
-            this.inside_y = 34;
+            this.inside_x = this.inside_x_idle;
+            this.inside_y = this.inside_y_idle;
         }
     }, {
         key: "walk",
         value: function walk(direction) {
             if (!this.isWalking) {
-                gc.mario.isWalking = true;
+                this.isWalking = true;
                 this.direction = direction;
             }
         }
     }, {
-        key: "jump",
-        value: function jump() {
-            if (this.isStanding) {
-                this.isJump = true;
-                this.isStanding = false;
-                this.gravityImpact = gravity.verticalImpact(this, 28, 9);
-            }
-        }
-    }, {
         key: "animate",
-        value: function animate(coordsArray, time) {
+        value: function animate(coordsArray) {
             var _this = this;
 
             function getFrame() {
-                var i = 0;
+                var i = 1;
                 return function () {
                     if (i > coordsArray.length - 1) {
-                        i = 0;
+                        i = 1;
                     }
                     i++;
                     return i - 1;
@@ -252,10 +320,11 @@ var Character = exports.Character = function () {
             var frame = getFrame();
             setInterval(function () {
                 if (_this.isWalking) {
-                    _this.inside_x = coordsArray[frame()][0];
-                    _this.inside_y = coordsArray[frame()][1];
+                    var now_frame = frame();
+                    _this.inside_x = coordsArray[now_frame][0];
+                    _this.inside_y = coordsArray[now_frame][1];
                 }
-            }, time);
+            }, coordsArray[0]);
         }
     }, {
         key: "sprint",
@@ -269,45 +338,60 @@ var Character = exports.Character = function () {
             this.idle();
         }
     }, {
+        key: "die",
+        value: function die() {
+            var _this2 = this;
+
+            var time = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 300;
+
+            this.stop();
+            this.inside_x_idle = this.dieSprite[0];
+            this.inside_y_idle = this.dieSprite[1];
+            setTimeout(function () {
+                _this2.died = true;
+            }, time);
+        }
+    }, {
         key: "isStaningStatus",
         value: function isStaningStatus() {
-            var _this2 = this;
+            var _this3 = this;
 
             this.isStanding = !(this.collidedObj.length === 0);
             var stands = false;
             this.collidedObj.map(function (item) {
                 if (item.type === "top") {
-                    _this2.isJump = true;
+                    _this3.isJump = true;
                     stands = true;
                 }
             });
             this.isStanding = stands;
         }
     }, {
-        key: "draw",
-        value: function draw() {
-            var _this3 = this;
+        key: "preDraw",
+        value: function preDraw() {
+            var _this4 = this;
 
+            var isCamFollow = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+            if (this.autoWalk) {
+                this.walk(this.direction);
+            }
             if (this.isWalking) {
-                var isDenied = null;
+                this.isDenied = null;
                 this.collidedObj.map(function (item) {
                     if (item.type === "all") {
-                        isDenied = _this3.x < item.obj.x + item.obj.size / 2 ? 1 : -1;
+                        _this4.isDenied = _this4.x < item.obj.x + item.obj.size / 2 ? 1 : -1;
                     }
                 });
 
-                if (isDenied !== this.direction && this.x + this.direction * this.speed > 0) {
-                    this.x += this.direction * this.speed;
-                    if (this.direction === 1 && this.x >= gc.gameWindow.width / 2 && this.x + this.size / 2 + gc.camera.xOffset < gc.mapSize * 40 - gc.gameWindow.width / 2) {
+                if (this.isDenied !== this.direction) {
+                    if (isCamFollow && this.direction === 1 && this.x >= gc.gameWindow.width / 2 && this.x + this.size / 2 + gc.camera.xOffset < gc.mapSize * 40 - gc.gameWindow.width / 2) {
                         gc.camera.move(-this.speed * this.direction, 0);
+                        if (this.x >= gc.gameWindow.width / 2) this.x = gc.gameWindow.width / 2;
                     }
                 }
 
-                if (this.x >= gc.gameWindow.width / 2) {
-                    this.x = gc.gameWindow.width / 2;
-                }
-
-                if (this.x + this.direction * this.speed - this.size / 2 < 0) {
+                if (isCamFollow && this.x + this.direction * this.speed - this.size / 2 < 0) {
                     this.x = this.size / 2;
                 }
             }
@@ -321,11 +405,17 @@ var Character = exports.Character = function () {
             if (!this.isWalking && this.collidedObj.length !== 0) {
                 this.idle();
             }
-
-            gc.ctx.save();
-            gc.ctx.scale(this.direction, 1);
-            gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.direction * this.x - this.size / 2, this.y, this.size, this.size);
-            gc.ctx.restore();
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            if (!this.died) {
+                this.preDraw();
+                gc.ctx.save();
+                gc.ctx.scale(this.direction, 1);
+                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.direction * this.x - this.size / 2, this.y, this.size, this.size);
+                gc.ctx.restore();
+            }
         }
     }]);
 
@@ -343,11 +433,18 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.verticalImpact = verticalImpact;
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function verticalImpact(obj, impact, gravity) {
     var fallSpeed = gravity;
     return function () {
-        obj.inside_x = 165;
-        obj.inside_y = 34;
+        obj.inside_x = obj.jumpSprite_x;
+        obj.inside_y = obj.jumpSprite_y;
         var isDenied = null;
         var yCoord = 0;
         obj.collidedObj.map(function (item) {
@@ -383,6 +480,75 @@ function verticalImpact(obj, impact, gravity) {
 "use strict";
 
 
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+var _collision = __webpack_require__(1);
+
+var collision = _interopRequireWildcard(_collision);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+document.onkeydown = function (e) {
+    if (gc.gameOver) return false;
+    var key = window.event ? e.keyCode : e.which;
+    //console.log(key);
+    switch (key) {
+        case 39:
+        case 37:
+            gc.mario.walk(key === 39 ? 1 : -1);
+            break;
+        case 16:
+            gc.mario.sprint();
+            break;
+        case 32:
+            gc.mario.jump();
+            break;
+        default:
+            break;
+    }
+};
+document.onkeyup = function (e) {
+    if (gc.gameOver) return false;
+    var key = window.event ? e.keyCode : e.which;
+    switch (key) {
+        case 39:
+        case 37:
+            gc.mario.stop();
+            break;
+        case 16:
+            gc.mario.sprint();
+            break;
+        case 32:
+            break;
+        default:
+            break;
+    }
+};
+
+function update() {
+    gc.ctx.clearRect(0, 0, gc.w, gc.h);
+    gc.ctx.fillStyle = "#6b8cff";
+    gc.ctx.fillRect(0, 0, gc.gameWindow.width, gc.gameWindow.height);
+    gc.ctx.imageSmoothingEnabled = false;
+    gc.map.tiles.map(function (item) {
+        item.draw();
+    });
+    gc.enemies.map(function (item) {
+        item.draw();
+    });
+    gc.mario.draw();
+}
+setInterval(update, gc.fps);
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
@@ -411,7 +577,7 @@ var ViewPort = exports.ViewPort = function () {
 }();
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -424,7 +590,7 @@ exports.TilesMap = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _tileClass = __webpack_require__(6);
+var _tileClass = __webpack_require__(7);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -879,7 +1045,7 @@ function getTilesMap(map) {
 }
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -892,7 +1058,7 @@ exports.Tile = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _collision = __webpack_require__(7);
+var _collision = __webpack_require__(1);
 
 var collision = _interopRequireWildcard(_collision);
 
@@ -971,6 +1137,12 @@ var Tile = exports.Tile = function () {
                 }
             }
 
+            if (this.collider) {
+                gc.enemies.map(function (item) {
+                    if (collision.collision(item, _this2) === "all") item.direction = item.direction === -1 ? 1 : -1;
+                });
+            }
+
             if (this.punchable) this.punched();
             this.x = this.xStart - gc.camera.xOffset;
             gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
@@ -981,7 +1153,7 @@ var Tile = exports.Tile = function () {
 }();
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -990,7 +1162,17 @@ var Tile = exports.Tile = function () {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.collision = collision;
+exports.PlayerChar = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _characterClass = __webpack_require__(2);
+
+var _gravity = __webpack_require__(3);
+
+var gravity = _interopRequireWildcard(_gravity);
 
 var _gameConfig = __webpack_require__(0);
 
@@ -998,33 +1180,150 @@ var gc = _interopRequireWildcard(_gameConfig);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function collision(obj1, obj2) {
-    var collideSide = null;
-    if (obj1.x + obj1.size / 2 >= obj2.x && obj1.x - obj1.size / 2 <= obj2.x + obj2.size && obj1.y <= obj2.y + obj2.size && obj1.y + obj1.size >= obj2.y) {
-        collideSide = "all";
-        if (obj1.y + obj1.size < obj2.y + obj2.size / 2 && !gc.map.getTileCollider(obj2.x, obj2.y - 40)) {
-            collideSide = "top";
-        }
-        if (obj1.y > obj2.y + obj2.size / 2 && Math.abs(obj1.x - (obj2.x + obj2.size / 2)) < 30) {
-            collideSide = "bottom";
-        }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var PlayerChar = exports.PlayerChar = function (_Character) {
+    _inherits(PlayerChar, _Character);
+
+    function PlayerChar(walkSpeed, idleSprite, idleSprite_x, idleSprite_y, jumpSprite_x, jumpSprite_y, dieSprite, walk_animation, x, y) {
+        var autoWalk = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : false;
+
+        _classCallCheck(this, PlayerChar);
+
+        var _this = _possibleConstructorReturn(this, (PlayerChar.__proto__ || Object.getPrototypeOf(PlayerChar)).call(this, walkSpeed, idleSprite, idleSprite_x, idleSprite_y, jumpSprite_x, jumpSprite_y, dieSprite, walk_animation, x, y, autoWalk));
+
+        _this.direction = 1;
+        return _this;
     }
-    var isCounted = false;
-    var num = null;
-    obj1.collidedObj.map(function (item, index) {
-        if (item.obj === obj2) {
-            isCounted = true;
-            num = index;
+
+    _createClass(PlayerChar, [{
+        key: "jump",
+        value: function jump() {
+            if (this.isStanding) {
+                this.isJump = true;
+                this.isStanding = false;
+                this.gravityImpact = gravity.verticalImpact(this, 28, 9);
+                if (!gc.gameOver) gc.sound_player.play("mario_jump");
+            }
         }
-    });
-    if (!isCounted && collideSide !== null) {
-        obj1.collidedObj.push({ obj: obj2, type: collideSide });
+    }, {
+        key: "kill_jump",
+        value: function kill_jump() {
+            if (this.isStanding) {
+                this.isJump = true;
+                this.isStanding = false;
+                this.gravityImpact = gravity.verticalImpact(this, 22, 9);
+            }
+        }
+    }, {
+        key: "isStaningStatus",
+        value: function isStaningStatus() {
+            _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "isStaningStatus", this).call(this);
+            if (gc.gameOver) this.isStanding = false;
+        }
+    }, {
+        key: "die",
+        value: function die() {
+            _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "die", this).call(this, 1000);
+            this.jumpSprite_x = this.dieSprite[0];
+            this.jumpSprite_y = this.dieSprite[1];
+            gc.mario.collidedObj = [];
+            gc.gameOver = true;
+            this.jump();
+            gc.music.loop(false);
+            gc.music.play("die");
+        }
+    }, {
+        key: "preDraw",
+        value: function preDraw() {
+            _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
+            if (this.isWalking && this.isDenied !== this.direction) {
+                this.x += this.direction * this.speed;
+            }
+        }
+    }]);
+
+    return PlayerChar;
+}(_characterClass.Character);
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Enemy = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _characterClass = __webpack_require__(2);
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+var _collision = __webpack_require__(1);
+
+var collision = _interopRequireWildcard(_collision);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Enemy = exports.Enemy = function (_Character) {
+    _inherits(Enemy, _Character);
+
+    function Enemy() {
+        _classCallCheck(this, Enemy);
+
+        return _possibleConstructorReturn(this, (Enemy.__proto__ || Object.getPrototypeOf(Enemy)).apply(this, arguments));
     }
-    if (isCounted && collideSide === null) {
-        obj1.collidedObj.splice(num, 1);
-    }
-    return collideSide;
-}
+
+    _createClass(Enemy, [{
+        key: "die",
+        value: function die() {
+            _get(Enemy.prototype.__proto__ || Object.getPrototypeOf(Enemy.prototype), "die", this).call(this);
+            gc.sound_enemy.play("mario_stomp");
+            if (this !== gc.mario) {
+                gc.mario.kill_jump();
+            }
+            this.autoWalk = false;
+        }
+    }, {
+        key: "preDraw",
+        value: function preDraw() {
+            var isCamFollow = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+            _get(Enemy.prototype.__proto__ || Object.getPrototypeOf(Enemy.prototype), "preDraw", this).call(this);
+            if (this.isWalking && this.isDenied !== this.direction && !(this.x - gc.mario.x > gc.gameWindow.width - gc.mario.x + gc.mario.size / 2 && !gc.gameOver)) {
+                this.x += this.direction * this.speed;
+            }
+            if (gc.mario.isWalking && gc.mario.direction === 1 && gc.mario.isDenied === null && gc.mario.x >= gc.gameWindow.width / 2) this.x -= gc.mario.speed;
+            var collideType = collision.collision(gc.mario, this, true);
+            if (collideType === "top" && !gc.gameOver) {
+                this.die();
+            } else if (collideType !== null) {
+                gc.mario.die();
+            }
+        }
+    }]);
+
+    return Enemy;
+}(_characterClass.Character);
 
 /***/ })
 /******/ ]);

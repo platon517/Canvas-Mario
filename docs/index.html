@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <title>Mario</title>
     <link rel="stylesheet" type="text/css" href="all.css"/>
+    <link rel="preload" href="sounds/stomp.wav" as="script">
 </head>
 <body>
     <canvas id="game_window">Обновите браузер</canvas>
-    <audio src="sounds/Theme.mp3" autoplay loop></audio>
+    <audio id="music" preload="none" src=""></audio>
+    <audio id="sound_player" preload="none" src=""></audio>
+    <audio id="sound_enemy" preload="none" src=""></audio>
 <script type="text/javascript" src="bundle.js"></script></body>
 </html>
