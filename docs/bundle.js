@@ -73,7 +73,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.enemies = exports.mario = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.gameOver = exports.fps = exports.mapSize = exports.sound_enemy = exports.sound_player = exports.music = undefined;
+exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.gameOver = exports.fps = exports.mapSize = exports.bg_music = exports.Sound = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -87,61 +87,54 @@ var _enemyClass = __webpack_require__(9);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Sound = function () {
-    function Sound(id) {
+var Sound = exports.Sound = function () {
+    function Sound(val) {
         var loop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
         _classCallCheck(this, Sound);
 
-        this.elem = document.getElementById(id);
+        this.elem = document.createElement('audio');
+        var src = void 0;
+        switch (val) {
+            case "bg":
+                src = "sounds/Theme.mp3";
+                break;
+            case "die":
+                src = "sounds/mariodie.wav";
+                break;
+            case "mario_jump":
+                src = "sounds/jump.wav";
+                break;
+            case "mario_stomp":
+                src = "sounds/stomp.wav";
+                break;
+            case "bump":
+                src = "sounds/bump.wav";
+                break;
+        }
+        this.elem.src = src;
         this.elem.loop = loop;
-        this.elem.preload = false;
+        //this.elem.preload = "auto";
+        this.elem.style.display = "none";
     }
 
     _createClass(Sound, [{
-        key: "loop",
-        value: function loop() {
-            var val = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
-            this.elem.loop = val;
+        key: "play",
+        value: function play() {
+            this.elem.play();
         }
     }, {
-        key: "play",
-        value: function play(val) {
-            var _this = this;
-
-            var src = void 0;
-            switch (val) {
-                case "bg":
-                    src = "sounds/Theme.mp3";
-                    break;
-                case "die":
-                    src = "sounds/mariodie.wav";
-                    break;
-                case "mario_jump":
-                    src = "sounds/jump.wav";
-                    break;
-                case "mario_stomp":
-                    src = "sounds/stomp.wav";
-                    break;
-            }
+        key: "stop",
+        value: function stop() {
             this.elem.pause();
-            this.elem.src = src;
-            this.elem.onloadeddata = function () {
-                console.log("Browser has loaded " + val);
-                _this.elem.play();
-            };
-            //this.elem.play();
         }
     }]);
 
     return Sound;
 }();
 
-var music = exports.music = new Sound("music", true);
-music.play("bg");
-var sound_player = exports.sound_player = new Sound("sound_player");
-var sound_enemy = exports.sound_enemy = new Sound("sound_enemy");
+var bg_music = exports.bg_music = new Sound("bg", true);
+bg_music.play();
 
 var mapSize = exports.mapSize = 224;
 
@@ -159,6 +152,8 @@ gameWindow.height = h;
 var camera = exports.camera = new _viewPort.ViewPort();
 
 var map = exports.map = new _tilesMap.TilesMap();
+
+var deadly_y = exports.deadly_y = gameWindow.height + 40;
 
 var mario = exports.mario = new _playerCharacterClass.PlayerChar(1, "img/mario/MarioSheet.png", 80, 34, 165, 34, [182, 34], [50, [97, 34], [114, 34], [131, 34]], 120, 480);
 
@@ -286,6 +281,7 @@ var Character = exports.Character = function () {
         this.autoWalk = autoWalk;
         this.dieSprite = dieSprite;
         this.died = false;
+        this.render = true;
     }
 
     _createClass(Character, [{
@@ -344,11 +340,12 @@ var Character = exports.Character = function () {
 
             var time = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 300;
 
+            this.died = true;
             this.stop();
             this.inside_x_idle = this.dieSprite[0];
             this.inside_y_idle = this.dieSprite[1];
             setTimeout(function () {
-                _this2.died = true;
+                _this2.render = false;
             }, time);
         }
     }, {
@@ -409,7 +406,7 @@ var Character = exports.Character = function () {
     }, {
         key: "draw",
         value: function draw() {
-            if (!this.died) {
+            if (this.render) {
                 this.preDraw();
                 gc.ctx.save();
                 gc.ctx.scale(this.direction, 1);
@@ -433,18 +430,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.verticalImpact = verticalImpact;
-
-var _gameConfig = __webpack_require__(0);
-
-var gc = _interopRequireWildcard(_gameConfig);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 function verticalImpact(obj, impact, gravity) {
     var fallSpeed = gravity;
     return function () {
-        obj.inside_x = obj.jumpSprite_x;
-        obj.inside_y = obj.jumpSprite_y;
         var isDenied = null;
         var yCoord = 0;
         obj.collidedObj.map(function (item) {
@@ -483,10 +471,6 @@ function verticalImpact(obj, impact, gravity) {
 var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
-
-var _collision = __webpack_require__(1);
-
-var collision = _interopRequireWildcard(_collision);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -1091,6 +1075,7 @@ var Tile = exports.Tile = function () {
         this.punchable = punchable;
         this.isPunched = false;
         this.test = false;
+        if (punchable) this.bump_sound = new _gameConfig.Sound("bump");
     }
 
     _createClass(Tile, [{
@@ -1130,6 +1115,7 @@ var Tile = exports.Tile = function () {
 
             if (this.collider && collision.collision(gc.mario, this) === "bottom") {
                 if (gc.mario.isJump) {
+                    this.bump_sound.play();
                     this.isPunched = true;
                     setTimeout(function () {
                         _this2.isPunched = false;
@@ -1197,6 +1183,9 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
         var _this = _possibleConstructorReturn(this, (PlayerChar.__proto__ || Object.getPrototypeOf(PlayerChar)).call(this, walkSpeed, idleSprite, idleSprite_x, idleSprite_y, jumpSprite_x, jumpSprite_y, dieSprite, walk_animation, x, y, autoWalk));
 
         _this.direction = 1;
+        _this.jump_sound = new _gameConfig.Sound("mario_jump");
+        _this.death = new _gameConfig.Sound("die");
+        _this.stomp = new _gameConfig.Sound("mario_stomp");
         return _this;
     }
 
@@ -1204,10 +1193,10 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
         key: "jump",
         value: function jump() {
             if (this.isStanding) {
+                if (!gc.gameOver) this.jump_sound.play();
                 this.isJump = true;
                 this.isStanding = false;
                 this.gravityImpact = gravity.verticalImpact(this, 28, 9);
-                if (!gc.gameOver) gc.sound_player.play("mario_jump");
             }
         }
     }, {
@@ -1217,6 +1206,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
                 this.isJump = true;
                 this.isStanding = false;
                 this.gravityImpact = gravity.verticalImpact(this, 22, 9);
+                this.stomp.play();
             }
         }
     }, {
@@ -1233,16 +1223,23 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
             this.jumpSprite_y = this.dieSprite[1];
             gc.mario.collidedObj = [];
             gc.gameOver = true;
+            this.isStanding = true;
             this.jump();
-            gc.music.loop(false);
-            gc.music.play("die");
+            gc.bg_music.stop();
+            this.death.play();
         }
     }, {
         key: "preDraw",
         value: function preDraw() {
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
+
             if (this.isWalking && this.isDenied !== this.direction) {
                 this.x += this.direction * this.speed;
+            }
+            if (this.y > gc.deadly_y && !this.died) this.die();
+            if (!this.isStanding) {
+                this.inside_x = this.jumpSprite_x;
+                this.inside_y = this.jumpSprite_y;
             }
         }
     }]);
@@ -1296,10 +1293,15 @@ var Enemy = exports.Enemy = function (_Character) {
     _createClass(Enemy, [{
         key: "die",
         value: function die() {
+            var _this2 = this;
+
             _get(Enemy.prototype.__proto__ || Object.getPrototypeOf(Enemy.prototype), "die", this).call(this);
-            gc.sound_enemy.play("mario_stomp");
             if (this !== gc.mario) {
+                gc.mario.isStanding = true;
                 gc.mario.kill_jump();
+                gc.mario.collidedObj.map(function (item, index) {
+                    if (item.obj === _this2) gc.mario.collidedObj.splice(index, 1);
+                });
             }
             this.autoWalk = false;
         }
@@ -1313,11 +1315,13 @@ var Enemy = exports.Enemy = function (_Character) {
                 this.x += this.direction * this.speed;
             }
             if (gc.mario.isWalking && gc.mario.direction === 1 && gc.mario.isDenied === null && gc.mario.x >= gc.gameWindow.width / 2) this.x -= gc.mario.speed;
-            var collideType = collision.collision(gc.mario, this, true);
-            if (collideType === "top" && !gc.gameOver) {
-                this.die();
-            } else if (collideType !== null) {
-                gc.mario.die();
+            if (!this.died) {
+                var collideType = collision.collision(gc.mario, this, true);
+                if (collideType === "top" && !gc.gameOver) {
+                    this.die();
+                } else if (collideType !== null) {
+                    gc.mario.die();
+                }
             }
         }
     }]);
