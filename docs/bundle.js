@@ -114,8 +114,8 @@ var Sound = exports.Sound = function () {
         }
         this.elem.src = src;
         this.elem.loop = loop;
-        //this.elem.preload = "auto";
         this.elem.style.display = "none";
+        document.body.appendChild(this.elem);
     }
 
     _createClass(Sound, [{
