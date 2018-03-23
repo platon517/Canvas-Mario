@@ -73,9 +73,11 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.gameOver = exports.fps = exports.mapSize = exports.bg_music = exports.Sound = undefined;
+exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.finished = exports.gameOver = exports.fps = exports.mapSize = exports.bg_music = exports.Sound = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.getTime = getTime;
 
 var _viewPort = __webpack_require__(5);
 
@@ -137,6 +139,11 @@ var Sound = exports.Sound = function () {
     return Sound;
 }();
 
+var startTime = new Date().getTime();
+function getTime() {
+    return (new Date().getTime() - startTime) / 1000 + "sec";
+}
+
 var bg_music = exports.bg_music = new Sound("bg", true);
 bg_music.play();
 
@@ -145,6 +152,8 @@ var mapSize = exports.mapSize = 224;
 var fps = exports.fps = 1000 / 300;
 
 var gameOver = exports.gameOver = false;
+
+var finished = exports.finished = false;
 
 var gameWindow = exports.gameWindow = document.getElementById("game_window");
 var ctx = exports.ctx = gameWindow.getContext('2d');
@@ -373,8 +382,8 @@ var Character = exports.Character = function () {
         }
     }, {
         key: "sprint",
-        value: function sprint() {
-            this.speed = this.speed === this.const_speed ? this.const_speed * 2 : this.const_speed;
+        value: function sprint(val) {
+            this.speed = val ? this.const_speed * 2 : this.const_speed;
         }
     }, {
         key: "stop",
@@ -501,7 +510,7 @@ document.onkeydown = function (e) {
             gc.mario.walk(key === 39 ? 1 : -1);
             break;
         case 16:
-            gc.mario.sprint();
+            gc.mario.sprint(true);
             break;
         case 32:
             gc.mario.jump();
@@ -519,7 +528,7 @@ document.onkeyup = function (e) {
             gc.mario.stop();
             break;
         case 16:
-            gc.mario.sprint();
+            gc.mario.sprint(false);
             break;
         case 32:
             break;
@@ -1264,7 +1273,10 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
     }, {
         key: "preDraw",
         value: function preDraw() {
-            if (this.x >= 6500) console.log("finish");
+            if (this.x + gc.camera.xOffset >= 7900 && !gc.finished) {
+                alert(gc.getTime());
+                gc.finished = true;
+            }
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
 
             if (this.isWalking && this.isDenied !== this.direction) {
