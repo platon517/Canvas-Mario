@@ -77,8 +77,6 @@ exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camer
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-exports.getTime = getTime;
-
 var _viewPort = __webpack_require__(5);
 
 var _tilesMap = __webpack_require__(6);
@@ -138,11 +136,6 @@ var Sound = exports.Sound = function () {
 
     return Sound;
 }();
-
-var startTime = new Date().getTime();
-function getTime() {
-    return (new Date().getTime() - startTime) / 1000 + "sec";
-}
 
 var bg_music = exports.bg_music = new Sound("bg", true);
 bg_music.play();
@@ -537,6 +530,11 @@ document.onkeyup = function (e) {
     }
 };
 
+var startTime = new Date().getTime();
+setInterval(function () {
+    if (!gc.finished) document.getElementById("time").innerHTML = "time: " + (new Date().getTime() - startTime) / 1000 + "sec";
+}, 10);
+
 function update() {
     gc.ctx.clearRect(0, 0, gc.w, gc.h);
     gc.ctx.fillStyle = "#6b8cff";
@@ -771,7 +769,7 @@ function getTilesMap(map) {
     map.tilesCoords.push([3720, 200, "action_brick"]);
     map.tilesCoords.push([3760, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 160)]]);
 
-    map.tilesCoords.push([3760, 360, "action_brick"]);
+    map.tilesCoords.push([3760, 360, "action_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320), new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 320)]]);
 
     map.tilesCoords.push([4000, 360, "action_brick"]);
     map.tilesCoords.push([4040, 360, "action_brick"]);
@@ -1154,10 +1152,14 @@ var Tile = exports.Tile = function () {
                     this.bump_sound.play();
                     this.isPunched = true;
                     if (this.bonus.length > 0) {
-                        this.bonus[0].activate();
-                        this.bonus_used = true;
-                        this.inside_x = this.animation_array[this.animation_array.length - 1][0] + 16;
-                        this.inside_y = this.animation_array[this.animation_array.length - 1][1];
+                        this.bonus[0].activate(this);
+                        if (this.bonus.length <= 1) {
+                            this.bonus_used = true;
+                            if (this.animation_array.length !== 0) {
+                                this.inside_x = this.animation_array[this.animation_array.length - 1][0] + 16;
+                                this.inside_y = this.animation_array[this.animation_array.length - 1][1];
+                            }
+                        }
                     }
                     setTimeout(function () {
                         _this2.isPunched = false;
@@ -1274,7 +1276,6 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
         key: "preDraw",
         value: function preDraw() {
             if (this.x + gc.camera.xOffset >= 7900 && !gc.finished) {
-                alert(gc.getTime());
                 gc.finished = true;
             }
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
@@ -1456,12 +1457,14 @@ var Coin = exports.Coin = function () {
             }
             if (this.active && this.y >= this.yStart) {
                 this.render = false;
+                this.parent.bonus.splice(0, 1);
             }
         }
     }, {
         key: "activate",
-        value: function activate() {
+        value: function activate(parent) {
             if (!this.active) {
+                this.parent = parent;
                 this.active = true;
                 this.render = true;
                 this.sound.play();
