@@ -111,6 +111,9 @@ var Sound = exports.Sound = function () {
             case "bump":
                 src = "sounds/bump.wav";
                 break;
+            case "coin":
+                src = "sounds/coin.wav";
+                break;
         }
         this.elem.src = src;
         this.elem.loop = loop;
@@ -158,6 +161,8 @@ var deadly_y = exports.deadly_y = gameWindow.height + 40;
 var mario = exports.mario = new _playerCharacterClass.PlayerChar(1, "img/mario/MarioSheet.png", 80, 34, 165, 34, [182, 34], [50, [97, 34], [114, 34], [131, 34]], 120, 480);
 
 var enemies = exports.enemies = [];
+//enemies.push(new Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 660, 320, false));
+
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 900, 480, true));
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 1620, 480, true));
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 2060, 480, true));
@@ -185,6 +190,48 @@ enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [3
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.verticalImpact = verticalImpact;
+function verticalImpact(obj, impact, gravity) {
+    var fallSpeed = gravity;
+    return function () {
+        var isDenied = null;
+        var yCoord = 0;
+        obj.collidedObj.map(function (item) {
+            if (item.type !== "all" && obj.y + obj.size > item.obj.y && obj.y < item.obj.y + item.obj.size) {
+                if (item.type === "top") {
+                    isDenied = "top";
+                    yCoord = item.obj.y - obj.size;
+                    obj.gravityImpact = verticalImpact(obj, 0, 9);
+                } else {
+                    isDenied = "bottom";
+                    yCoord = item.obj.y + item.obj.size;
+                }
+            }
+        });
+        if (isDenied === null) {
+            var power = ((fallSpeed += gravity / 30) - impact) / 3.6;
+            obj.isJump = power < 0;
+            obj.y += power;
+        } else {
+            obj.y = yCoord;
+            if (isDenied === "bottom") {
+                obj.y += 1;
+                obj.gravityImpact = verticalImpact(obj, 0, 9);
+            }
+        }
+    };
+}
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 exports.collision = collision;
 
 var _gameConfig = __webpack_require__(0);
@@ -197,7 +244,7 @@ function collision(obj1, obj2) {
     var alives = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
     var collideSide = null;
-    if (gc.gameOver && obj1 === gc.mario) return collideSide;
+    if (gc.gameOver && obj1 === gc.mario || obj1.died) return collideSide;
     if (obj1.x + obj1.size / 2 >= obj2.x - (alives ? obj2.size / 2 : 0) && obj1.x - obj1.size / 2 <= obj2.x + obj2.size / (alives ? 2 : 1) && obj1.y <= obj2.y + obj2.size && obj1.y + obj1.size >= obj2.y) {
         collideSide = "all";
         if (obj1.y + obj1.size < obj2.y + obj2.size / 2 && !gc.map.getTileCollider(obj2.x, obj2.y - 40)) {
@@ -225,7 +272,7 @@ function collision(obj1, obj2) {
 }
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -238,7 +285,7 @@ exports.Character = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _gravity = __webpack_require__(3);
+var _gravity = __webpack_require__(1);
 
 var gravity = _interopRequireWildcard(_gravity);
 
@@ -270,6 +317,7 @@ var Character = exports.Character = function () {
         this.jumpSprite_x = jumpSprite_x;
         this.jumpSprite_y = jumpSprite_y;
         this.direction = -1;
+        this.reverse_y = 1;
         this.walk_animation = walk_animation;
         this.inside_x_idle = idleSprite_x;
         this.inside_y_idle = idleSprite_y;
@@ -335,15 +383,22 @@ var Character = exports.Character = function () {
         }
     }, {
         key: "die",
-        value: function die() {
+        value: function die(time, type) {
             var _this2 = this;
-
-            var time = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 300;
 
             this.died = true;
             this.stop();
-            this.inside_x_idle = this.dieSprite[0];
-            this.inside_y_idle = this.dieSprite[1];
+            if (type === "top") {
+                this.inside_x_idle = this.dieSprite[0];
+                this.inside_y_idle = this.dieSprite[1];
+            } else {
+                this.reverse_y = -1;
+                this.collidedObj = [];
+                this.isStanding = true;
+                this.gravityImpact = gravity.verticalImpact(this, 24, 9);
+                this.speed *= 2;
+                this.walk(1);
+            }
             setTimeout(function () {
                 _this2.render = false;
             }, time);
@@ -359,6 +414,7 @@ var Character = exports.Character = function () {
                 if (item.type === "top") {
                     _this3.isJump = true;
                     stands = true;
+                    if (item.obj.isPunched) _this3.die(1000, "bottom");
                 }
             });
             this.isStanding = stands;
@@ -409,8 +465,8 @@ var Character = exports.Character = function () {
             if (this.render) {
                 this.preDraw();
                 gc.ctx.save();
-                gc.ctx.scale(this.direction, 1);
-                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.direction * this.x - this.size / 2, this.y, this.size, this.size);
+                gc.ctx.scale(this.direction, this.reverse_y);
+                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.direction * this.x - this.size / 2, this.reverse_y * this.y - (this.reverse_y === -1 ? this.size : 0), this.size, this.size);
                 gc.ctx.restore();
             }
         }
@@ -418,48 +474,6 @@ var Character = exports.Character = function () {
 
     return Character;
 }();
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.verticalImpact = verticalImpact;
-function verticalImpact(obj, impact, gravity) {
-    var fallSpeed = gravity;
-    return function () {
-        var isDenied = null;
-        var yCoord = 0;
-        obj.collidedObj.map(function (item) {
-            if (item.type !== "all" && obj.y + obj.size > item.obj.y && obj.y < item.obj.y + item.obj.size) {
-                if (item.type === "top") {
-                    isDenied = "top";
-                    yCoord = item.obj.y - obj.size;
-                    obj.gravityImpact = verticalImpact(obj, 0, 9);
-                } else {
-                    isDenied = "bottom";
-                    yCoord = item.obj.y + item.obj.size;
-                }
-            }
-        });
-        if (isDenied === null) {
-            var power = ((fallSpeed += gravity / 30) - impact) / 3.6;
-            obj.isJump = power < 0;
-            obj.y += power;
-        } else {
-            obj.y = yCoord;
-            if (isDenied === "bottom") {
-                obj.y += 1;
-                obj.gravityImpact = verticalImpact(obj, 0, 9);
-            }
-        }
-    };
-}
 
 /***/ }),
 /* 4 */
@@ -471,6 +485,8 @@ function verticalImpact(obj, impact, gravity) {
 var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
+
+var _coinClass = __webpack_require__(10);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -576,6 +592,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _tileClass = __webpack_require__(7);
 
+var _coinClass = __webpack_require__(10);
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var TilesMap = exports.TilesMap = function () {
@@ -649,13 +667,13 @@ function getTilesMap(map) {
         map.tilesCoords.push([multipler + 1560, 80, "cloud-right"]);
     }
 
-    map.tilesCoords.push([640, 360, "bonus_brick"]);
+    map.tilesCoords.push([640, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 640, 320)]]);
     map.tilesCoords.push([800, 360, "action_brick"]);
     map.tilesCoords.push([840, 360, "bonus_brick"]);
     map.tilesCoords.push([880, 360, "action_brick"]);
-    map.tilesCoords.push([920, 360, "bonus_brick"]);
+    map.tilesCoords.push([920, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 920, 320)]]);
     map.tilesCoords.push([960, 360, "action_brick"]);
-    map.tilesCoords.push([880, 200, "bonus_brick"]);
+    map.tilesCoords.push([880, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 880, 160)]]);
 
     for (var _i5 = 0; _i5 < 5; _i5++) {
         var _multipler = 1920 * _i5;
@@ -741,18 +759,18 @@ function getTilesMap(map) {
     map.tilesCoords.push([3640, 200, "action_brick"]);
     map.tilesCoords.push([3680, 200, "action_brick"]);
     map.tilesCoords.push([3720, 200, "action_brick"]);
-    map.tilesCoords.push([3760, 200, "bonus_brick"]);
+    map.tilesCoords.push([3760, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3760, 160)]]);
 
     map.tilesCoords.push([3760, 360, "action_brick"]);
 
     map.tilesCoords.push([4000, 360, "action_brick"]);
     map.tilesCoords.push([4040, 360, "action_brick"]);
 
-    map.tilesCoords.push([4240, 360, "bonus_brick"]);
+    map.tilesCoords.push([4240, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 4240, 320)]]);
 
-    map.tilesCoords.push([4360, 360, "bonus_brick"]);
+    map.tilesCoords.push([4360, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 4360, 320)]]);
 
-    map.tilesCoords.push([4480, 360, "bonus_brick"]);
+    map.tilesCoords.push([4480, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 4480, 320)]]);
 
     map.tilesCoords.push([4360, 200, "bonus_brick"]);
 
@@ -763,8 +781,8 @@ function getTilesMap(map) {
     map.tilesCoords.push([4920, 200, "action_brick"]);
 
     map.tilesCoords.push([5120, 200, "action_brick"]);
-    map.tilesCoords.push([5160, 200, "bonus_brick"]);
-    map.tilesCoords.push([5200, 200, "bonus_brick"]);
+    map.tilesCoords.push([5160, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 5160, 160)]]);
+    map.tilesCoords.push([5200, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 5200, 160)]]);
     map.tilesCoords.push([5240, 200, "action_brick"]);
 
     map.tilesCoords.push([5160, 360, "action_brick"]);
@@ -825,7 +843,7 @@ function getTilesMap(map) {
 
     map.tilesCoords.push([6720, 360, "action_brick"]);
     map.tilesCoords.push([6760, 360, "action_brick"]);
-    map.tilesCoords.push([6800, 360, "bonus_brick"]);
+    map.tilesCoords.push([6800, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 6800, 320)]]);
     map.tilesCoords.push([6840, 360, "action_brick"]);
 
     map.tilesCoords.push([7160, 480, "pipe-base-left"]);
@@ -928,102 +946,109 @@ function getTilesMap(map) {
     map.tilesCoords.push([8200, 320, "castle_brick_top_snake"]);
 
     map.tilesCoords.map(function (item) {
-        var tile = void 0;
+        var src = "img/blocks/BlocksSheet2.png";
+        var collider = false;
+        var animation = [];
+        var x = void 0,
+            y = void 0;
+        var bonus = item[3] !== undefined ? item[3] : [];
+        var punchable = false;
         switch (item[2]) {
             case "ground_brick":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 0);
+                collider = true;x = 0;y = 0;
                 break;
             case "action_brick":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 0, true);
+                collider = true;x = 16;y = 0;punchable = true;
                 break;
             case "cloud-left":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 0, 328);
+                x = 0;y = 328;
                 break;
             case "cloud-middle":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 16, 328);
+                x = 16;y = 328;
                 break;
             case "cloud-middle-top":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 16, 320);
+                x = 16;y = 320;
                 break;
             case "cloud-right":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 32, 328);
+                x = 32;y = 328;
                 break;
             case "bush-left":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 144);
+                x = 176;y = 144;
                 break;
             case "bush-middle":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 144);
+                x = 192;y = 144;
                 break;
             case "bush-right":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 208, 144);
+                x = 208;y = 144;
                 break;
             case "hill-left-slide":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 128, 128);
+                x = 128;y = 128;
                 break;
             case "hill-right-slide":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 160, 128);
+                x = 160;y = 128;
                 break;
             case "hill-left-inner":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 128, 144);
+                x = 128;y = 144;
                 break;
             case "hill-middle-inner":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 144, 144);
+                x = 144;y = 144;
                 break;
             case "hill-right-inner":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 160, 144);
+                x = 160;y = 144;
                 break;
             case "hill-top":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 144, 128);
+                x = 144;y = 128;
                 break;
             case "pipe-top-left":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 128);
+                collider = true;x = 0;y = 128;
                 break;
             case "pipe-top-right":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 128);
+                collider = true;x = 16;y = 128;
                 break;
             case "pipe-base-left":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 144);
+                collider = true;x = 0;y = 144;
                 break;
             case "pipe-base-right":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 16, 144);
+                collider = true;x = 16;y = 144;
                 break;
             case "bonus_brick":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [[384, 0], [400, 0], [416, 0]], item[0], item[1], 384, 0, true);
+                collider = true;x = 384;y = 0;animation = [[384, 0], [400, 0], [416, 0]];punchable = true;
                 break;
             case "empty_brick":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 0, 16);
+                collider = true;x = 0;y = 16;
                 break;
             case "flag_base":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 256, 144);
+                collider = true;x = 256;y = 144;
                 break;
             case "flag_top":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", true, [], item[0], item[1], 256, 128);
+                collider = true;x = 256;y = 128;
                 break;
             case "flag_plane":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet.png", true, [], item[0], item[1], 128, 32);
+                src = "img/blocks/BlocksSheet.png";collider = true;x = 128;y = 32;
                 break;
             case "castle_brick":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 32, 0);
+                x = 32;y = 0;
                 break;
             case "black":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 208, 16);
+                x = 208;y = 16;
                 break;
             case "castle_brick_door_top":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 16);
+                x = 192;y = 16;
                 break;
             case "castle_brick_top_snake":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 0);
+                x = 176;y = 0;
                 break;
             case "castle_brick_top_snake_2":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 176, 16);
+                x = 176;y = 16;
                 break;
             case "castle_brick_black_right":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 192, 0);
+                x = 192;y = 0;
                 break;
             case "castle_brick_black_left":
-                tile = new _tileClass.Tile("img/blocks/BlocksSheet2.png", false, [], item[0], item[1], 224, 0);
+                x = 224;y = 0;
                 break;
         }
+        var tile = new _tileClass.Tile(src, collider, animation, item[0], item[1], x, y, bonus, punchable);
         map.tiles.push(tile);
     });
 }
@@ -1042,7 +1067,7 @@ exports.Tile = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _collision = __webpack_require__(1);
+var _collision = __webpack_require__(2);
 
 var collision = _interopRequireWildcard(_collision);
 
@@ -1055,9 +1080,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Tile = exports.Tile = function () {
-    function Tile(idleSprite, collider, animation_array, x, y, inside_x, inside_y) {
-        var punchable = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
-
+    function Tile(idleSprite, collider, animation_array, x, y, inside_x, inside_y, bonus, punchable) {
         _classCallCheck(this, Tile);
 
         this.canvasObject = new Image();
@@ -1074,7 +1097,8 @@ var Tile = exports.Tile = function () {
         if (animation_array.length > 0) this.animate(this.animation_array, 200);
         this.punchable = punchable;
         this.isPunched = false;
-        this.test = false;
+        this.bonus = bonus;
+        this.bonus_used = false;
         if (punchable) this.bump_sound = new _gameConfig.Sound("bump");
     }
 
@@ -1095,6 +1119,7 @@ var Tile = exports.Tile = function () {
             }
             var frame = getFrame();
             setInterval(function () {
+                if (_this.bonus_used) return false;
                 _this.inside_x = coordsArray[frame()][0];
                 _this.inside_y = coordsArray[frame()][1];
             }, time);
@@ -1113,10 +1138,17 @@ var Tile = exports.Tile = function () {
         value: function draw() {
             var _this2 = this;
 
+            if (this.bonus.length > 0) this.bonus[0].draw();
             if (this.collider && collision.collision(gc.mario, this) === "bottom") {
                 if (gc.mario.isJump) {
                     this.bump_sound.play();
                     this.isPunched = true;
+                    if (this.bonus.length > 0) {
+                        this.bonus[0].activate();
+                        this.bonus_used = true;
+                        this.inside_x = this.animation_array[this.animation_array.length - 1][0] + 16;
+                        this.inside_y = this.animation_array[this.animation_array.length - 1][1];
+                    }
                     setTimeout(function () {
                         _this2.isPunched = false;
                     }, 100);
@@ -1154,9 +1186,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _characterClass = __webpack_require__(2);
+var _characterClass = __webpack_require__(3);
 
-var _gravity = __webpack_require__(3);
+var _gravity = __webpack_require__(1);
 
 var gravity = _interopRequireWildcard(_gravity);
 
@@ -1218,7 +1250,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
     }, {
         key: "die",
         value: function die() {
-            _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "die", this).call(this, 1000);
+            _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "die", this).call(this, 1000, "top");
             this.jumpSprite_x = this.dieSprite[0];
             this.jumpSprite_y = this.dieSprite[1];
             gc.mario.collidedObj = [];
@@ -1263,13 +1295,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _characterClass = __webpack_require__(2);
+var _characterClass = __webpack_require__(3);
 
 var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
 
-var _collision = __webpack_require__(1);
+var _collision = __webpack_require__(2);
 
 var collision = _interopRequireWildcard(_collision);
 
@@ -1292,10 +1324,10 @@ var Enemy = exports.Enemy = function (_Character) {
 
     _createClass(Enemy, [{
         key: "die",
-        value: function die() {
+        value: function die(time, type) {
             var _this2 = this;
 
-            _get(Enemy.prototype.__proto__ || Object.getPrototypeOf(Enemy.prototype), "die", this).call(this);
+            _get(Enemy.prototype.__proto__ || Object.getPrototypeOf(Enemy.prototype), "die", this).call(this, time, type);
             if (this !== gc.mario) {
                 gc.mario.isStanding = true;
                 gc.mario.kill_jump();
@@ -1318,7 +1350,7 @@ var Enemy = exports.Enemy = function (_Character) {
             if (!this.died) {
                 var collideType = collision.collision(gc.mario, this, true);
                 if (collideType === "top" && !gc.gameOver) {
-                    this.die();
+                    this.die(300, "top");
                 } else if (collideType !== null) {
                     gc.mario.die();
                 }
@@ -1328,6 +1360,118 @@ var Enemy = exports.Enemy = function (_Character) {
 
     return Enemy;
 }(_characterClass.Character);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Coin = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+var _gravity = __webpack_require__(1);
+
+var gravity = _interopRequireWildcard(_gravity);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Coin = exports.Coin = function () {
+    function Coin(sprite_map, sprites, animation_speed, insideSprite_x, insideSprite_y, x, y) {
+        _classCallCheck(this, Coin);
+
+        this.canvasObject = new Image();
+        this.canvasObject.src = sprite_map;
+        this.xStart = x;
+        this.yStart = y;
+        this.x = x;
+        this.y = y;
+        this.size = 40;
+        this.isStanding = true;
+        this.isJump = false;
+        this.direction = -1;
+        this.reverse_y = 1;
+        this.inside_x = insideSprite_x;
+        this.inside_y = insideSprite_y;
+        this.animate(sprites, animation_speed);
+        this.gravityImpact = gravity.verticalImpact(this, 0, 9);
+        this.render = false;
+        this.active = false;
+        this.collidedObj = [];
+        this.sound = new _gameConfig.Sound("coin");
+    }
+
+    _createClass(Coin, [{
+        key: "animate",
+        value: function animate(coordsArray, time) {
+            var _this = this;
+
+            function getFrame() {
+                var i = 1;
+                return function () {
+                    if (i > coordsArray.length - 1) {
+                        i = 1;
+                    }
+                    i++;
+                    return i - 1;
+                };
+            }
+            var frame = getFrame();
+            setInterval(function () {
+                var now_frame = frame();
+                _this.inside_x = coordsArray[now_frame][0];
+                _this.inside_y = coordsArray[now_frame][1];
+            }, time);
+        }
+    }, {
+        key: "preDraw",
+        value: function preDraw() {
+            if (!this.isStanding) {
+                this.gravityImpact();
+            }
+            if (this.active && this.y >= this.yStart) {
+                this.render = false;
+            }
+        }
+    }, {
+        key: "activate",
+        value: function activate() {
+            if (!this.active) {
+                this.active = true;
+                this.render = true;
+                this.sound.play();
+                this.isStanding = true;
+                this.gravityImpact = gravity.verticalImpact(this, 24, 9);
+                this.isStanding = false;
+            }
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            if (this.render) {
+                this.preDraw();
+                this.x = this.xStart - gc.camera.xOffset;
+                gc.ctx.save();
+                gc.ctx.scale(1, 1);
+                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
+                gc.ctx.restore();
+            }
+        }
+    }]);
+
+    return Coin;
+}();
 
 /***/ })
 /******/ ]);
