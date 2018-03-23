@@ -114,6 +114,9 @@ var Sound = exports.Sound = function () {
             case "coin":
                 src = "sounds/coin.wav";
                 break;
+            case "stage_clear":
+                src = "sounds/stage_clear.wav";
+                break;
         }
         this.elem.volume = 0.1;
         this.elem.src = src;
@@ -677,7 +680,7 @@ function getTilesMap(map) {
 
     map.tilesCoords.push([640, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 640, 320)]]);
     map.tilesCoords.push([800, 360, "action_brick"]);
-    map.tilesCoords.push([840, 360, "bonus_brick"]);
+    map.tilesCoords.push([840, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 840, 320)]]);
     map.tilesCoords.push([880, 360, "action_brick"]);
     map.tilesCoords.push([920, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 920, 320)]]);
     map.tilesCoords.push([960, 360, "action_brick"]);
@@ -752,7 +755,7 @@ function getTilesMap(map) {
     map.tilesCoords.push([2320, 360, "pipe-top-right"]);
 
     map.tilesCoords.push([3080, 360, "action_brick"]);
-    map.tilesCoords.push([3120, 360, "bonus_brick"]);
+    map.tilesCoords.push([3120, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 3120, 320)]]);
     map.tilesCoords.push([3160, 360, "action_brick"]);
 
     map.tilesCoords.push([3200, 200, "action_brick"]);
@@ -780,7 +783,7 @@ function getTilesMap(map) {
 
     map.tilesCoords.push([4480, 360, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 4480, 320)]]);
 
-    map.tilesCoords.push([4360, 200, "bonus_brick"]);
+    map.tilesCoords.push([4360, 200, "bonus_brick", [new _coinClass.Coin("img/blocks/BlocksSheet.png", [[144, 112], [160, 112], [176, 112], [192, 112]], 100, 144, 112, 4360, 160)]]);
 
     map.tilesCoords.push([4720, 360, "action_brick"]);
 
@@ -1230,6 +1233,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
         _this.jump_sound = new _gameConfig.Sound("mario_jump");
         _this.death = new _gameConfig.Sound("die");
         _this.stomp = new _gameConfig.Sound("mario_stomp");
+        _this.win = new _gameConfig.Sound("stage_clear");
         return _this;
     }
 
@@ -1277,6 +1281,8 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
         value: function preDraw() {
             if (this.x + gc.camera.xOffset >= 7900 && !gc.finished) {
                 gc.finished = true;
+                gc.bg_music.stop();
+                this.win.play();
             }
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
 
