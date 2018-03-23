@@ -115,6 +115,7 @@ var Sound = exports.Sound = function () {
                 src = "sounds/coin.wav";
                 break;
         }
+        this.elem.volume = 0.1;
         this.elem.src = src;
         this.elem.loop = loop;
         this.elem.style.display = "none";
@@ -1263,6 +1264,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
     }, {
         key: "preDraw",
         value: function preDraw() {
+            if (this.x >= 6500) console.log("finish");
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
 
             if (this.isWalking && this.isDenied !== this.direction) {
