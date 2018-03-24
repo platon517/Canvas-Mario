@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,17 +73,21 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.finished = exports.gameOver = exports.fps = exports.mapSize = exports.bg_music = exports.Sound = undefined;
+exports.win_flag = exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.finished = exports.gameOver = exports.fps = exports.mapSize = exports.game_text = exports.bg_music = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.Sound = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _viewPort = __webpack_require__(5);
+var _viewPort = __webpack_require__(6);
 
-var _tilesMap = __webpack_require__(6);
+var _tilesMap = __webpack_require__(7);
 
-var _playerCharacterClass = __webpack_require__(8);
+var _playerCharacterClass = __webpack_require__(9);
 
-var _enemyClass = __webpack_require__(9);
+var _enemyClass = __webpack_require__(10);
+
+var _tileClass = __webpack_require__(8);
+
+var _fontClass = __webpack_require__(11);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -140,8 +144,17 @@ var Sound = exports.Sound = function () {
     return Sound;
 }();
 
+var gameWindow = exports.gameWindow = document.getElementById("game_window");
+var ctx = exports.ctx = gameWindow.getContext('2d');
+var w = exports.w = 800;
+var h = exports.h = 600;
+gameWindow.width = w;
+gameWindow.height = h;
+
 var bg_music = exports.bg_music = new Sound("bg", true);
 bg_music.play();
+
+var game_text = exports.game_text = new _fontClass.Font();
 
 var mapSize = exports.mapSize = 224;
 
@@ -150,13 +163,6 @@ var fps = exports.fps = 1000 / 300;
 var gameOver = exports.gameOver = false;
 
 var finished = exports.finished = false;
-
-var gameWindow = exports.gameWindow = document.getElementById("game_window");
-var ctx = exports.ctx = gameWindow.getContext('2d');
-var w = exports.w = 800;
-var h = exports.h = 600;
-gameWindow.width = w;
-gameWindow.height = h;
 
 var camera = exports.camera = new _viewPort.ViewPort();
 
@@ -185,6 +191,15 @@ enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [3
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 5180, 480, true));
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 6980, 480, true));
 enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [32, 16], [100, [0, 16], [16, 16]], 7040, 480, true));
+
+var win_flag = exports.win_flag = new _tileClass.Tile("img/blocks/BlocksSheet.png", false, [], 8160, 340, 128, 0, [], false);
+win_flag.up = function () {
+    var _this = this;
+
+    setInterval(function () {
+        if (_this.y > 280) _this.y -= 1;
+    }, 25);
+};
 
 /***/ }),
 /* 1 */
@@ -279,6 +294,129 @@ function collision(obj1, obj2) {
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Coin = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _gameConfig = __webpack_require__(0);
+
+var gc = _interopRequireWildcard(_gameConfig);
+
+var _gravity = __webpack_require__(1);
+
+var gravity = _interopRequireWildcard(_gravity);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Coin = exports.Coin = function () {
+    function Coin(sprite_map, sprites, animation_speed, insideSprite_x, insideSprite_y, x, y) {
+        _classCallCheck(this, Coin);
+
+        this.canvasObject = new Image();
+        this.canvasObject.src = sprite_map;
+        this.xStart = x;
+        this.yStart = y;
+        this.x = x;
+        this.y = y;
+        this.size = 40;
+        this.isStanding = true;
+        this.isJump = false;
+        this.direction = -1;
+        this.reverse_y = 1;
+        this.inside_x = insideSprite_x;
+        this.inside_y = insideSprite_y;
+        this.animate(sprites, animation_speed);
+        this.gravityImpact = gravity.verticalImpact(this, 0, 9);
+        this.render = false;
+        this.active = false;
+        this.collidedObj = [];
+        this.sound = new _gameConfig.Sound("coin");
+    }
+
+    _createClass(Coin, [{
+        key: "animate",
+        value: function animate(coordsArray, time) {
+            var _this = this;
+
+            function getFrame() {
+                var i = 1;
+                return function () {
+                    if (i > coordsArray.length - 1) {
+                        i = 1;
+                    }
+                    i++;
+                    return i - 1;
+                };
+            }
+            var frame = getFrame();
+            setInterval(function () {
+                var now_frame = frame();
+                _this.inside_x = coordsArray[now_frame][0];
+                _this.inside_y = coordsArray[now_frame][1];
+            }, time);
+        }
+    }, {
+        key: "preDraw",
+        value: function preDraw() {
+            if (!this.isStanding) {
+                this.gravityImpact();
+            }
+            if (this.active && this.y >= this.yStart) {
+                this.render = false;
+                this.parent.bonus.splice(0, 1);
+            }
+        }
+    }, {
+        key: "activate",
+        value: function activate(parent) {
+            if (!this.active) {
+                this.parent = parent;
+                this.active = true;
+                this.render = true;
+                this.sound.play();
+                this.isStanding = true;
+                this.gravityImpact = gravity.verticalImpact(this, 24, 9);
+                this.isStanding = false;
+                var newCoinVal = parseFloat(gc.game_text.text[5].word) + 1;
+                var extraZero = "";
+                if (Math.floor(newCoinVal / 10) === 0) {
+                    extraZero += "0";
+                }
+                if (Math.floor(newCoinVal / 100) === 0) {
+                    extraZero += "0";
+                }
+                gc.game_text.text[5].word = extraZero + newCoinVal.toString();
+            }
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            if (this.render) {
+                this.preDraw();
+                this.x = this.xStart - gc.camera.xOffset;
+                gc.ctx.save();
+                gc.ctx.scale(1, 1);
+                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
+                gc.ctx.restore();
+            }
+        }
+    }]);
+
+    return Coin;
+}();
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -482,7 +620,7 @@ var Character = exports.Character = function () {
 }();
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -492,57 +630,76 @@ var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
 
-var _coinClass = __webpack_require__(10);
-
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 document.onkeydown = function (e) {
-    if (gc.gameOver) return false;
-    var key = window.event ? e.keyCode : e.which;
-    //console.log(key);
-    switch (key) {
-        case 39:
-        case 37:
-            gc.mario.walk(key === 39 ? 1 : -1);
-            break;
-        case 16:
-            gc.mario.sprint(true);
-            break;
-        case 32:
-            gc.mario.jump();
-            break;
-        default:
-            break;
+    if (!gc.gameOver && !gc.finished) {
+        var key = window.event ? e.keyCode : e.which;
+        //console.log(key);
+        switch (key) {
+            case 39:
+            case 37:
+                gc.mario.walk(key === 39 ? 1 : -1);
+                break;
+            case 16:
+                gc.mario.sprint(true);
+                break;
+            case 32:
+                gc.mario.jump();
+                break;
+            default:
+                break;
+        }
     }
 };
 document.onkeyup = function (e) {
-    if (gc.gameOver) return false;
-    var key = window.event ? e.keyCode : e.which;
-    switch (key) {
-        case 39:
-        case 37:
-            gc.mario.stop();
-            break;
-        case 16:
-            gc.mario.sprint(false);
-            break;
-        case 32:
-            break;
-        default:
-            break;
+    if (!gc.gameOver && !gc.finished) {
+        var key = window.event ? e.keyCode : e.which;
+        switch (key) {
+            case 39:
+            case 37:
+                gc.mario.stop();
+                break;
+            case 16:
+                gc.mario.sprint(false);
+                break;
+            case 32:
+                break;
+            default:
+                break;
+        }
     }
 };
 
-var startTime = new Date().getTime();
-setInterval(function () {
-    if (!gc.finished) document.getElementById("time").innerHTML = "time: " + (new Date().getTime() - startTime) / 1000 + "sec";
+/*
+let timer = document.createElement("div");
+document.body.appendChild(timer);
+let startTime = new Date().getTime();
+setInterval(()=>{
+    if(!gc.finished) timer.innerHTML = "time: " + (new Date().getTime() - startTime) / 1000 + "sec";
 }, 10);
+*/
+
+setInterval(function () {
+    if (!gc.finished && !gc.gameOver) {
+        var newTimeVal = parseFloat(gc.game_text.text[7].word) - 1;
+        var extraZero = "";
+        if (Math.floor(newTimeVal / 10) === 0) {
+            extraZero += "0";
+        }
+        if (Math.floor(newTimeVal / 100) === 0) {
+            extraZero += "0";
+        }
+        gc.game_text.text[7].word = extraZero + newTimeVal.toString();
+    }
+}, 1000);
 
 function update() {
     gc.ctx.clearRect(0, 0, gc.w, gc.h);
     gc.ctx.fillStyle = "#6b8cff";
     gc.ctx.fillRect(0, 0, gc.gameWindow.width, gc.gameWindow.height);
     gc.ctx.imageSmoothingEnabled = false;
+    gc.win_flag.draw();
     gc.map.tiles.map(function (item) {
         item.draw();
     });
@@ -550,11 +707,12 @@ function update() {
         item.draw();
     });
     gc.mario.draw();
+    gc.game_text.draw();
 }
 setInterval(update, gc.fps);
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -588,7 +746,7 @@ var ViewPort = exports.ViewPort = function () {
 }();
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -601,9 +759,9 @@ exports.TilesMap = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _tileClass = __webpack_require__(7);
+var _tileClass = __webpack_require__(8);
 
-var _coinClass = __webpack_require__(10);
+var _coinClass = __webpack_require__(3);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -964,6 +1122,7 @@ function getTilesMap(map) {
             y = void 0;
         var bonus = item[3] !== undefined ? item[3] : [];
         var punchable = false;
+        var isFlag = false;
         switch (item[2]) {
             case "ground_brick":
                 collider = true;x = 0;y = 0;
@@ -1029,13 +1188,13 @@ function getTilesMap(map) {
                 collider = true;x = 0;y = 16;
                 break;
             case "flag_base":
-                collider = true;x = 256;y = 144;
+                x = 256;y = 144;
                 break;
             case "flag_top":
-                collider = true;x = 256;y = 128;
+                x = 256;y = 128;
                 break;
             case "flag_plane":
-                src = "img/blocks/BlocksSheet.png";collider = true;x = 128;y = 32;
+                src = "img/blocks/BlocksSheet.png";x = 128;y = 32;isFlag = true;
                 break;
             case "castle_brick":
                 x = 32;y = 0;
@@ -1060,12 +1219,17 @@ function getTilesMap(map) {
                 break;
         }
         var tile = new _tileClass.Tile(src, collider, animation, item[0], item[1], x, y, bonus, punchable);
+        if (isFlag) {
+            tile.down = function () {
+                this.y += 1;
+            };
+        }
         map.tiles.push(tile);
     });
 }
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1149,6 +1313,7 @@ var Tile = exports.Tile = function () {
         value: function draw() {
             var _this2 = this;
 
+            if (this.down !== undefined && gc.finished && this.y < 440) this.down();
             if (this.bonus.length > 0) this.bonus[0].draw();
             if (this.collider && collision.collision(gc.mario, this) === "bottom") {
                 if (gc.mario.isJump) {
@@ -1186,7 +1351,7 @@ var Tile = exports.Tile = function () {
 }();
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1201,7 +1366,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _characterClass = __webpack_require__(3);
+var _characterClass = __webpack_require__(4);
 
 var _gravity = __webpack_require__(1);
 
@@ -1277,13 +1442,19 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
             this.death.play();
         }
     }, {
+        key: "flagAnimation",
+        value: function flagAnimation() {
+            var _this2 = this;
+
+            setInterval(function () {
+                if (_this2.getFlagFrame !== null) _this2.getFlagFrame = _this2.getFlagFrame === 16 ? 0 : 16;
+            }, 150);
+        }
+    }, {
         key: "preDraw",
         value: function preDraw() {
-            if (this.x + gc.camera.xOffset >= 7900 && !gc.finished) {
-                gc.finished = true;
-                gc.bg_music.stop();
-                this.win.play();
-            }
+            var _this3 = this;
+
             _get(PlayerChar.prototype.__proto__ || Object.getPrototypeOf(PlayerChar.prototype), "preDraw", this).call(this, true);
 
             if (this.isWalking && this.isDenied !== this.direction) {
@@ -1294,6 +1465,30 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
                 this.inside_x = this.jumpSprite_x;
                 this.inside_y = this.jumpSprite_y;
             }
+            if (this.x + gc.camera.xOffset >= 7920 && !gc.finished) {
+                this.stop();
+                this.gravityImpact = gravity.verticalImpact(this, 0, 0);
+                gc.finished = true;
+                gc.bg_music.stop();
+                this.win.play();
+                this.getFlagFrame = 0;
+                this.flagAnimation();
+                setTimeout(function () {
+                    _this3.getFlagFrame = null;
+                    _this3.isStanding = true;
+                    _this3.jump();
+                    _this3.speed = 0.5;
+                    _this3.walk(1);
+                }, 1500);
+            }
+            if (this.x + gc.camera.xOffset >= 7920 && this.getFlagFrame !== null) {
+                this.inside_x = 198 + this.getFlagFrame;
+                this.inside_y = 34;
+            }
+            if (this.x + gc.camera.xOffset >= 8180) {
+                this.render = false;
+                gc.win_flag.up();
+            }
         }
     }]);
 
@@ -1301,7 +1496,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
 }(_characterClass.Character);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1316,7 +1511,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _characterClass = __webpack_require__(3);
+var _characterClass = __webpack_require__(4);
 
 var _gameConfig = __webpack_require__(0);
 
@@ -1383,7 +1578,7 @@ var Enemy = exports.Enemy = function (_Character) {
 }(_characterClass.Character);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1392,7 +1587,7 @@ var Enemy = exports.Enemy = function (_Character) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Coin = undefined;
+exports.Font = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -1400,100 +1595,43 @@ var _gameConfig = __webpack_require__(0);
 
 var gc = _interopRequireWildcard(_gameConfig);
 
-var _gravity = __webpack_require__(1);
-
-var gravity = _interopRequireWildcard(_gravity);
-
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Coin = exports.Coin = function () {
-    function Coin(sprite_map, sprites, animation_speed, insideSprite_x, insideSprite_y, x, y) {
-        _classCallCheck(this, Coin);
+var Font = exports.Font = function () {
+    function Font() {
+        _classCallCheck(this, Font);
 
         this.canvasObject = new Image();
-        this.canvasObject.src = sprite_map;
-        this.xStart = x;
-        this.yStart = y;
-        this.x = x;
-        this.y = y;
-        this.size = 40;
-        this.isStanding = true;
-        this.isJump = false;
-        this.direction = -1;
-        this.reverse_y = 1;
-        this.inside_x = insideSprite_x;
-        this.inside_y = insideSprite_y;
-        this.animate(sprites, animation_speed);
-        this.gravityImpact = gravity.verticalImpact(this, 0, 9);
-        this.render = false;
-        this.active = false;
-        this.collidedObj = [];
-        this.sound = new _gameConfig.Sound("coin");
+        this.canvasObject.src = "img/font.png";
+        this.size = 20;
+        this.text = [{ word: "mario", x: 20, y: 10 }, { word: "000000", x: 20, y: 30 }, { word: "world", x: gc.gameWindow.width / 2 + 20, y: 10 }, { word: "1-1", x: gc.gameWindow.width / 2 + 40, y: 30 }, { word: "coins", x: gc.gameWindow.width / 2 - 20 * 6, y: 10 }, { word: "000", x: gc.gameWindow.width / 2 - 20 * 5, y: 30 }, { word: "time", x: gc.gameWindow.width - 20 * 5, y: 10 }, { word: "400", x: gc.gameWindow.width - 20 * 4, y: 30 }];
+        this.fontArr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "", "", "", "", "-"];
     }
 
-    _createClass(Coin, [{
-        key: "animate",
-        value: function animate(coordsArray, time) {
-            var _this = this;
-
-            function getFrame() {
-                var i = 1;
-                return function () {
-                    if (i > coordsArray.length - 1) {
-                        i = 1;
-                    }
-                    i++;
-                    return i - 1;
-                };
-            }
-            var frame = getFrame();
-            setInterval(function () {
-                var now_frame = frame();
-                _this.inside_x = coordsArray[now_frame][0];
-                _this.inside_y = coordsArray[now_frame][1];
-            }, time);
-        }
-    }, {
-        key: "preDraw",
-        value: function preDraw() {
-            if (!this.isStanding) {
-                this.gravityImpact();
-            }
-            if (this.active && this.y >= this.yStart) {
-                this.render = false;
-                this.parent.bonus.splice(0, 1);
-            }
-        }
-    }, {
-        key: "activate",
-        value: function activate(parent) {
-            if (!this.active) {
-                this.parent = parent;
-                this.active = true;
-                this.render = true;
-                this.sound.play();
-                this.isStanding = true;
-                this.gravityImpact = gravity.verticalImpact(this, 24, 9);
-                this.isStanding = false;
+    _createClass(Font, [{
+        key: "draw_word",
+        value: function draw_word(word, x, y) {
+            for (var i = 0; i < word.length; i++) {
+                var num = this.fontArr.indexOf(word.charAt(i));
+                var inside_x = 8 * (num % 16);
+                var inside_y = 8 * Math.floor(num / 16);
+                gc.ctx.drawImage(this.canvasObject, inside_x, inside_y, 8, 8, x + this.size * i, y, this.size, this.size);
             }
         }
     }, {
         key: "draw",
         value: function draw() {
-            if (this.render) {
-                this.preDraw();
-                this.x = this.xStart - gc.camera.xOffset;
-                gc.ctx.save();
-                gc.ctx.scale(1, 1);
-                gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
-                gc.ctx.restore();
-            }
+            var _this = this;
+
+            this.text.map(function (item) {
+                _this.draw_word(item.word, item.x, item.y);
+            });
         }
     }]);
 
-    return Coin;
+    return Font;
 }();
 
 /***/ })
