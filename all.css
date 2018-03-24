@@ -12,6 +12,12 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+}
+
+#time{
+    padding-top: 10px;
+    font-size: 22px;
 }
 
 canvas {
