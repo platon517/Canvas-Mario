@@ -73,7 +73,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.win_flag = exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.finished = exports.gameOver = exports.fps = exports.mapSize = exports.game_text = exports.bg_music = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.Sound = undefined;
+exports.win_flag = exports.enemies = exports.mario = exports.deadly_y = exports.map = exports.camera = exports.finished = exports.gameOver = exports.fps = exports.mapSize = exports.game_text = exports.bg_music = exports.startTime = exports.h = exports.w = exports.ctx = exports.gameWindow = exports.Sound = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -150,6 +150,8 @@ var w = exports.w = 800;
 var h = exports.h = 600;
 gameWindow.width = w;
 gameWindow.height = h;
+
+var startTime = exports.startTime = new Date().getTime();
 
 var bg_music = exports.bg_music = new Sound("bg", true);
 bg_music.play();
@@ -670,15 +672,6 @@ document.onkeyup = function (e) {
         }
     }
 };
-
-/*
-let timer = document.createElement("div");
-document.body.appendChild(timer);
-let startTime = new Date().getTime();
-setInterval(()=>{
-    if(!gc.finished) timer.innerHTML = "time: " + (new Date().getTime() - startTime) / 1000 + "sec";
-}, 10);
-*/
 
 setInterval(function () {
     if (!gc.finished && !gc.gameOver) {
@@ -1473,6 +1466,8 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
                 this.win.play();
                 this.getFlagFrame = 0;
                 this.flagAnimation();
+                var endTime = new Date().getTime();
+                alert("time: " + (endTime - gc.startTime) / 1000);
                 setTimeout(function () {
                     _this3.getFlagFrame = null;
                     _this3.isStanding = true;
