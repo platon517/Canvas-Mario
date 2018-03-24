@@ -669,6 +669,10 @@ document.onkeyup = function (e) {
 setInterval(function () {
     if (!gc.finished && !gc.gameOver) {
         gc.game_text.addTime();
+        if (parseFloat(gc.game_text.text[7].word) <= 0) {
+            gc.gameOver = true;
+            gc.mario.die();
+        }
     }
 }, 500);
 
