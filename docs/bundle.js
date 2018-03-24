@@ -389,15 +389,8 @@ var Coin = exports.Coin = function () {
                 this.isStanding = true;
                 this.gravityImpact = gravity.verticalImpact(this, 24, 9);
                 this.isStanding = false;
-                var newCoinVal = parseFloat(gc.game_text.text[5].word) + 1;
-                var extraZero = "";
-                if (Math.floor(newCoinVal / 10) === 0) {
-                    extraZero += "0";
-                }
-                if (Math.floor(newCoinVal / 100) === 0) {
-                    extraZero += "0";
-                }
-                gc.game_text.text[5].word = extraZero + newCoinVal.toString();
+                gc.game_text.addCoin();
+                gc.game_text.addScore(200);
             }
         }
     }, {
@@ -675,17 +668,9 @@ document.onkeyup = function (e) {
 
 setInterval(function () {
     if (!gc.finished && !gc.gameOver) {
-        var newTimeVal = parseFloat(gc.game_text.text[7].word) - 1;
-        var extraZero = "";
-        if (Math.floor(newTimeVal / 10) === 0) {
-            extraZero += "0";
-        }
-        if (Math.floor(newTimeVal / 100) === 0) {
-            extraZero += "0";
-        }
-        gc.game_text.text[7].word = extraZero + newTimeVal.toString();
+        gc.game_text.addTime();
     }
-}, 1000);
+}, 500);
 
 function update() {
     gc.ctx.clearRect(0, 0, gc.w, gc.h);
@@ -1336,6 +1321,7 @@ var Tile = exports.Tile = function () {
 
             if (this.punchable) this.punched();
             this.x = this.xStart - gc.camera.xOffset;
+            //this.y = this.yStart - gc.camera.yOffset;
             gc.ctx.drawImage(this.canvasObject, this.inside_x, this.inside_y, 16, 16, this.x, this.y, this.size, this.size);
         }
     }]);
@@ -1474,6 +1460,15 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
                     _this3.jump();
                     _this3.speed = 0.5;
                     _this3.walk(1);
+                    setTimeout(function () {
+                        setInterval(function () {
+                            var time = parseFloat(gc.game_text.text[7].word);
+                            if (time > 0) {
+                                gc.game_text.addTime();
+                                gc.game_text.addScore(50);
+                            }
+                        }, 10);
+                    }, 3000);
                 }, 1500);
             }
             if (this.x + gc.camera.xOffset >= 7920 && this.getFlagFrame !== null) {
@@ -1545,6 +1540,7 @@ var Enemy = exports.Enemy = function (_Character) {
                 gc.mario.collidedObj.map(function (item, index) {
                     if (item.obj === _this2) gc.mario.collidedObj.splice(index, 1);
                 });
+                gc.game_text.addScore(100);
             }
             this.autoWalk = false;
         }
@@ -1606,6 +1602,33 @@ var Font = exports.Font = function () {
     }
 
     _createClass(Font, [{
+        key: "addCoin",
+        value: function addCoin() {
+            this.addValue(5, 1, 3);
+        }
+    }, {
+        key: "addScore",
+        value: function addScore(val) {
+            this.addValue(1, val, 6);
+        }
+    }, {
+        key: "addTime",
+        value: function addTime() {
+            this.addValue(7, -1, 3);
+        }
+    }, {
+        key: "addValue",
+        value: function addValue(type, val, size) {
+            var newScoreVal = parseFloat(this.text[type].word) + val;
+            var extraZero = "";
+            for (var i = 1; i < size; i++) {
+                if (Math.floor(newScoreVal / Math.pow(10, i)) === 0) {
+                    extraZero += "0";
+                }
+            }
+            this.text[type].word = extraZero + newScoreVal.toString();
+        }
+    }, {
         key: "draw_word",
         value: function draw_word(word, x, y) {
             for (var i = 0; i < word.length; i++) {
