@@ -1467,7 +1467,7 @@ var PlayerChar = exports.PlayerChar = function (_Character) {
                 this.getFlagFrame = 0;
                 this.flagAnimation();
                 var endTime = new Date().getTime();
-                alert("time: " + (endTime - gc.startTime) / 1000);
+                console.log("time: " + (endTime - gc.startTime) / 1000);
                 setTimeout(function () {
                     _this3.getFlagFrame = null;
                     _this3.isStanding = true;
