@@ -91,6 +91,13 @@ var _fontClass = __webpack_require__(11);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var volume = 0.1;
+var volume_range = document.getElementById("volume_range");
+volume_range.value = volume;
+volume_range.onchange = function () {
+    volume = volume_range.value;
+};
+
 var Sound = exports.Sound = function () {
     function Sound(val) {
         var loop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -122,11 +129,12 @@ var Sound = exports.Sound = function () {
                 src = "sounds/stage_clear.wav";
                 break;
         }
-        this.elem.volume = 0.1;
+        this.elem.volume = volume;
         this.elem.src = src;
         this.elem.loop = loop;
         this.elem.style.display = "none";
         document.body.appendChild(this.elem);
+        this.listenVolume();
     }
 
     _createClass(Sound, [{
@@ -138,6 +146,15 @@ var Sound = exports.Sound = function () {
         key: "stop",
         value: function stop() {
             this.elem.pause();
+        }
+    }, {
+        key: "listenVolume",
+        value: function listenVolume() {
+            var _this = this;
+
+            setInterval(function () {
+                _this.elem.volume = volume;
+            }, 5);
         }
     }]);
 
@@ -196,10 +213,10 @@ enemies.push(new _enemyClass.Enemy(0.25, "img/chars/chars.png", 0, 16, 0, 16, [3
 
 var win_flag = exports.win_flag = new _tileClass.Tile("img/blocks/BlocksSheet.png", false, [], 8160, 340, 128, 0, [], false);
 win_flag.up = function () {
-    var _this = this;
+    var _this2 = this;
 
     setInterval(function () {
-        if (_this.y > 280) _this.y -= 1;
+        if (_this2.y > 280) _this2.y -= 1;
     }, 25);
 };
 
