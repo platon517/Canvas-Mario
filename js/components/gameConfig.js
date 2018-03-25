@@ -5,6 +5,12 @@ import {Enemy} from "./enemyClass";
 import {Tile} from "./tileClass";
 import {Font} from "./fontClass";
 
+let volume = 0.1;
+let volume_range = document.getElementById("volume_range");
+volume_range.value = volume;
+volume_range.onchange = () => {
+    volume = volume_range.value;
+};
 export class Sound{
     constructor(val, loop = false){
         this.elem = document.createElement('audio');
@@ -32,17 +38,23 @@ export class Sound{
                 src = "sounds/stage_clear.wav";
                 break;
         }
-        this.elem.volume = 0.1;
+        this.elem.volume = volume;
         this.elem.src = src;
         this.elem.loop = loop;
         this.elem.style.display = "none";
         document.body.appendChild(this.elem);
+        this.listenVolume();
     }
     play(){
         this.elem.play();
     }
     stop(){
         this.elem.pause();
+    }
+    listenVolume(){
+        setInterval(()=>{
+            this.elem.volume = volume;
+        }, 5);
     }
 }
 
